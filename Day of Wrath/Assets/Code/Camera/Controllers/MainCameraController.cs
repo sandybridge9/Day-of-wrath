@@ -14,7 +14,7 @@ public class MainCameraController : MonoBehaviour
     {
         currentRotation = transform.eulerAngles
             .GetVector2InspectorAnglesFromEulerAngles()
-            .CrossXAndY();
+            .SwapXAndY();
     }
 
     void Update()
@@ -28,9 +28,19 @@ public class MainCameraController : MonoBehaviour
 
     private void Move()
     {
-        var movement = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+        var horizontalInput = Input.GetAxis("Horizontal");
+        var verticalInput = Input.GetAxis("Vertical");
+        
+        if(horizontalInput != 0  || verticalInput != 0)
+        {
+            var movementVector = Vector3.ClampMagnitude(
+                transform.TransformDirection(new Vector3(horizontalInput, 0, verticalInput)),
+                CameraMovementSpeed);
 
-        transform.position += CameraMovementSpeed * Time.deltaTime * movement;
+            movementVector.y = 0;
+
+            transform.position += CameraMovementSpeed * Time.deltaTime * movementVector;
+        }
     }
 
     private void Zoom()

@@ -4,8 +4,6 @@ public static class Vector3Extensions
 {
     public static Vector2 GetVector2InspectorAnglesFromEulerAngles(this Vector3 eulerAngles)
     {
-        Debug.Log(eulerAngles);
-
         float xAngle;
         float yAngle;
 
