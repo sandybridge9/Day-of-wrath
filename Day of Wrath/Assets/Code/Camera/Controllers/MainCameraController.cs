@@ -1,45 +1,64 @@
 using UnityEngine;
+using Cursor = UnityEngine.Cursor;
 
 public class MainCameraController : MonoBehaviour
 {
-    public float MovementSpeed = 5.0f;
-    public float mouseSensitivity = 1.0f;
-    private Vector3 lastPosition;
+    public float CameraMovementSpeed = 10.0f;
+    public float CameraZoomSpeed = 10.0f;
+    public float CameraRotationSpeed = 1.0f;
+    public float maxYRotationAngle = 80f;
+
+    private Vector2 currentRotation;
 
     void Start()
     {
-        
+        currentRotation = transform.eulerAngles
+            .GetVector2InspectorAnglesFromEulerAngles()
+            .CrossXAndY();
     }
 
     void Update()
     {
         Move();
 
-        //Pan();
+        Zoom();
+
+        Rotate();
     }
 
     private void Move()
     {
         var movement = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
 
-        transform.position += MovementSpeed * Time.deltaTime * movement;
+        transform.position += CameraMovementSpeed * Time.deltaTime * movement;
     }
-    
-    //private void Pan()
-    //{
-    //    if (Input.GetMouseButtonDown(0))
-    //    {
-    //        lastPosition = Input.mousePosition;
-    //    }
 
-    //    if (Input.GetMouseButton(0))
-    //    {
-    //        var delta = Input.mousePosition - lastPosition;
+    private void Zoom()
+    {
+        var scrollWheelInput = Input.GetAxis("Mouse ScrollWheel");
 
-    //        transform.Translate(delta.x * mouseSensitivity, delta.y * mouseSensitivity, 0);
+        if (scrollWheelInput != 0)
+        {
+            transform.position += scrollWheelInput * CameraZoomSpeed * transform.forward;
+        }
+    }
 
-    //        lastPosition = Input.mousePosition;
-    //    }
+    private void Rotate()
+    {
+        if (Input.GetMouseButton(1))
+        {
+            Cursor.lockState = CursorLockMode.Locked;
 
-    //}
+            currentRotation.x += Input.GetAxis("Mouse X") * CameraRotationSpeed;
+            currentRotation.y -= Input.GetAxis("Mouse Y") * CameraRotationSpeed;
+            currentRotation.x = Mathf.Repeat(currentRotation.x, 360);
+            currentRotation.y = Mathf.Clamp(currentRotation.y, -maxYRotationAngle, maxYRotationAngle);
+
+            transform.rotation = Quaternion.Euler(currentRotation.y, currentRotation.x, 0);
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+    }
 }
