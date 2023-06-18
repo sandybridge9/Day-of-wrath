@@ -2,12 +2,8 @@ using UnityEngine;
 
 public class UnitBase : MonoBehaviour
 {
-    void Start()
-    {
-    }
+    public float health;
 
-    void Update()
-    {
-    }
+    public float movementSpeed;
 }
 
