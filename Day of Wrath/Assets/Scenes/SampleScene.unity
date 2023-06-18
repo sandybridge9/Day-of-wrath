@@ -563,5 +563,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e09f0db236eb2f44b82b5d2a152003ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MovementSpeed: 5
-  mouseSensitivity: 1
+  CameraMovementSpeed: 10
+  CameraZoomSpeed: 10
+  CameraRotationSpeed: 1
+  maxYRotationAngle: 80
