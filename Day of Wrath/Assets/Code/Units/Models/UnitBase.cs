@@ -1,9 +1,9 @@
 using UnityEngine;
 
-public class UnitBase : MonoBehaviour
+public class UnitBase : SelectableObject
 {
-    public float health;
+    public float Health;
 
-    public float movementSpeed;
+    public float MovementSpeed;
 }
 
