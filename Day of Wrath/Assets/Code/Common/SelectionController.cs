@@ -6,20 +6,29 @@ public class SelectionController : MonoBehaviour
     public LayerMask SelectableLayers;
 
     [HideInInspector]
-    public List<SelectableObject> SelectedObjects = new List<SelectableObject>();
+    public List<UnitBase> SelectedUnits = new List<UnitBase>();
 
     [HideInInspector]
     public bool IsSelectionActive
     {
         get
         {
-            return SelectedObjects.Count > 0;
+            return SelectedUnits.Count > 0;
+        }
+    }
+
+    [HideInInspector]
+    public bool AnySelectedUnits
+    {
+        get
+        {
+            return SelectedUnits.Count > 0;
         }
     }
 
     void Update()
     {
-        Debug.Log(SelectedObjects.Count);
+        Debug.Log(SelectedUnits.Count);
         Select();
     }
 
@@ -34,23 +43,46 @@ public class SelectionController : MonoBehaviour
 
             if (Physics.Raycast(castPointRay, out var raycastHit, Mathf.Infinity, SelectableLayers))
             {
-                var hitGameObject = raycastHit.collider.gameObject;
-
-                if (hitGameObject != null)
-                {
-                    var selectableObject = hitGameObject.GetComponent<SelectableObject>();
-
-                    if (selectableObject != null)
-                    {
-                        selectableObject.IsSelected = true;
-                        SelectedObjects.Add(selectableObject);
-
-                        Debug.Log("Selected a SelectableObject");
-                    }
-                }
-
-                return;
+                TrySelectHitObject(raycastHit);
             }
+        }
+    }
+
+    private void TrySelectHitObject(RaycastHit raycastHit)
+    {
+        var hitGameObject = raycastHit.collider.gameObject;
+
+        if (hitGameObject != null)
+        {
+            var selectableObject = hitGameObject.GetComponent<SelectableObject>();
+
+            if (selectableObject != null)
+            {
+                AddSelectedObjectToList(selectableObject);
+            }
+        }
+    }
+
+    private void AddSelectedObjectToList(SelectableObject selectableObject)
+    {
+        switch (selectableObject.Type)
+        {
+            case SelectableObjectType.Unit:
+                var unitBase = selectableObject.GetComponent<UnitBase>();
+                if (unitBase != null)
+                {
+                    unitBase.IsSelected = true;
+                    SelectedUnits.Add(unitBase);
+                    Debug.Log("Selected a Unit");
+                }
+                break;
+
+            case SelectableObjectType.Building:
+                Debug.Log("Selected a Building");
+                break;
+
+            default:
+                break;
         }
     }
 
@@ -58,12 +90,12 @@ public class SelectionController : MonoBehaviour
     {
         if (IsSelectionActive)
         {
-            SelectedObjects.ForEach(
-                selectedObject => selectedObject.IsSelected = false);
+            SelectedUnits.ForEach(
+                selectedUnit => selectedUnit.IsSelected = false);
 
-            SelectedObjects.Clear();
+            SelectedUnits.Clear();
 
-            Debug.Log("Deselected");
+            Debug.Log("Deselected Units and Buildings");
         }
     }
 }
