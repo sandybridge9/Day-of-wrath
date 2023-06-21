@@ -28,21 +28,24 @@ public class SelectionController : MonoBehaviour
 
     void Update()
     {
-        Debug.Log(SelectedUnits.Count);
         Select();
+
+        if (Input.GetKey(KeyCode.Escape))
+        {
+            ClearSelection();
+        }
     }
 
     private void Select()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            ClearSelection();
-
             var mousePosition = Input.mousePosition;
             var castPointRay = Camera.main.ScreenPointToRay(mousePosition);
 
             if (Physics.Raycast(castPointRay, out var raycastHit, Mathf.Infinity, SelectableLayers))
             {
+                ClearSelection();
                 TrySelectHitObject(raycastHit);
             }
         }

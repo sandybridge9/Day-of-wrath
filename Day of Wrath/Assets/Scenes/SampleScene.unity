@@ -136,8 +136,7 @@ GameObject:
   - component: {fileID: 672398352}
   - component: {fileID: 672398351}
   - component: {fileID: 672398356}
-  - component: {fileID: 672398355}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: CubeUnit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -230,22 +229,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &672398355
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 672398350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 97c5db95af9bf3742ae33d553bf90187, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  MovementSpeed: 5
-  HitLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
 --- !u!114 &672398356
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -258,8 +241,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5bcfaa79183d654ab316ee35602a420, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 100
-  movementSpeed: 20
+  Health: 100
+  MovementSpeed: 10
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -472,6 +455,8 @@ GameObject:
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
   - component: {fileID: 963194229}
+  - component: {fileID: 963194230}
+  - component: {fileID: 963194231}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -569,3 +554,35 @@ MonoBehaviour:
   CameraZoomSpeed: 10
   CameraRotationSpeed: 1
   maxYRotationAngle: 80
+--- !u!114 &963194230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6c9c34283801204a90eba857fce2815, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SelectableLayers:
+    serializedVersion: 2
+    m_Bits: 192
+  SelectedUnits: []
+--- !u!114 &963194231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97c5db95af9bf3742ae33d553bf90187, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  WalkableLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  SelectionController: {fileID: 963194230}

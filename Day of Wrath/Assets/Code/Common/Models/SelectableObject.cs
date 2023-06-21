@@ -8,7 +8,7 @@ public class SelectableObject : MonoBehaviour
     [HideInInspector]
     public virtual SelectableObjectType Type { get;}
 
-    public void Update()
+    public virtual void Update()
     {
         OnSelect();
     }

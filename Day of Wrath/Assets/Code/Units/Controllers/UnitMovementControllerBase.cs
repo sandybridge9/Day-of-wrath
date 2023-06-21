@@ -2,51 +2,50 @@ using UnityEngine;
 
 public class UnitMovementControllerBase : MonoBehaviour
 {
-    public float MovementSpeed;
-    public LayerMask HitLayers;
+    public LayerMask WalkableLayers;
 
+    public SelectionController SelectionController;
+
+    private bool newPositionIsActive = false;
     private Vector3 newPosition;
-    
-    void Start()
-    {
-        newPosition = transform.position;
-    }
 
     void Update()
     {
-        GetNewPositionByMouse();
+        TryGetNewPosition();
 
-        MoveToNewPosition();
+        OrderSelectedUnitsToMove();
     }
 
-    private void GetNewPositionByMouse()
+    private void TryGetNewPosition()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0)
+            && SelectionController.AnySelectedUnits)
         {
             var mousePosition = Input.mousePosition;
             var castPointRay = Camera.main.ScreenPointToRay(mousePosition);
 
-            if (Physics.Raycast(castPointRay, out var hitRay, Mathf.Infinity, HitLayers))
+            if (Physics.Raycast(castPointRay, out var hitRay, Mathf.Infinity, WalkableLayers))
             {
+                Debug.Log("Setting new movement position");
                 newPosition = hitRay.point;
+                newPositionIsActive = true;
             }
         }
     }
 
-    private void MoveToNewPosition()
+    private void OrderSelectedUnitsToMove()
     {
-        if(transform.position == newPosition)
+        if(!newPositionIsActive)
         {
             return;
         }
 
-        transform.position = Vector3.MoveTowards(transform.position, newPosition, MovementSpeed * Time.deltaTime);
-    }
+        foreach(var unit in SelectionController.SelectedUnits)
+        {
+            Debug.Log("Ordering unit to move");
+            unit.BeginMoving(newPosition);
+        }
 
-    private void MoveUsingArrowKeys()
-    {
-        var movement = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
-
-        transform.position += MovementSpeed * Time.deltaTime * movement;
+        newPositionIsActive = false;
     }
 }
