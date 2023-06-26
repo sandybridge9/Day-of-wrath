@@ -9,11 +9,15 @@ public class SelectionController : MonoBehaviour
     public List<UnitBase> SelectedUnits = new List<UnitBase>();
 
     [HideInInspector]
+    public BuildingBase SelectedBuilding = null;
+
+    [HideInInspector]
     public bool IsSelectionActive
     {
         get
         {
-            return SelectedUnits.Count > 0;
+            return SelectedUnits.Count > 0
+                || SelectedBuilding != null;
         }
     }
 
@@ -23,6 +27,15 @@ public class SelectionController : MonoBehaviour
         get
         {
             return SelectedUnits.Count > 0;
+        }
+    }
+
+    [HideInInspector]
+    public bool IsBuildingSelected
+    {
+        get
+        {
+            return SelectedBuilding != null;
         }
     }
 
@@ -81,7 +94,13 @@ public class SelectionController : MonoBehaviour
                 break;
 
             case SelectableObjectType.Building:
-                Debug.Log("Selected a Building");
+                var buildingBase = selectableObject.GetComponent<BuildingBase>();
+                if (buildingBase != null)
+                {
+                    buildingBase.IsSelected = true;
+                    SelectedBuilding = buildingBase;
+                    Debug.Log("Selected a Building");
+                }
                 break;
 
             default:
@@ -95,8 +114,10 @@ public class SelectionController : MonoBehaviour
         {
             SelectedUnits.ForEach(
                 selectedUnit => selectedUnit.IsSelected = false);
-
             SelectedUnits.Clear();
+
+            SelectedBuilding.IsSelected = false;
+            SelectedBuilding = null;
 
             Debug.Log("Deselected Units and Buildings");
         }
