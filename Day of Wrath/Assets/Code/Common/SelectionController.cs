@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class SelectionController : MonoBehaviour
 {
+    [HideInInspector]
     public LayerMask SelectableLayers;
 
     [HideInInspector]
@@ -24,29 +25,25 @@ public class SelectionController : MonoBehaviour
     [HideInInspector]
     public bool AnySelectedUnits
     {
-        get
-        {
-            return SelectedUnits.Count > 0;
-        }
+        get { return SelectedUnits.Count > 0; }
     }
 
     [HideInInspector]
     public bool IsBuildingSelected
     {
-        get
-        {
-            return SelectedBuilding != null;
-        }
+        get { return SelectedBuilding != null; }
+    }
+
+    private void Start()
+    {
+        SelectableLayers = LayerMask.GetMask(
+            nameof(SelectableObjectType.Unit),
+            nameof(SelectableObjectType.Building));
     }
 
     void Update()
     {
         Select();
-
-        if (Input.GetKey(KeyCode.Escape))
-        {
-            ClearSelection();
-        }
     }
 
     private void Select()
@@ -108,18 +105,19 @@ public class SelectionController : MonoBehaviour
         }
     }
 
-    private void ClearSelection()
+    public void ClearSelection()
     {
-        if (IsSelectionActive)
+        if (AnySelectedUnits)
         {
             SelectedUnits.ForEach(
                 selectedUnit => selectedUnit.IsSelected = false);
             SelectedUnits.Clear();
+        }
 
+        if(IsBuildingSelected)
+        {
             SelectedBuilding.IsSelected = false;
             SelectedBuilding = null;
-
-            Debug.Log("Deselected Units and Buildings");
         }
     }
 }

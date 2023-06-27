@@ -26,7 +26,7 @@ public class UnitMovementControllerBase : MonoBehaviour
 
             if (Physics.Raycast(castPointRay, out var hitRay, Mathf.Infinity, WalkableLayers))
             {
-                Debug.Log("Setting new movement position");
+                // Debug.Log("Setting new movement position");
                 newPosition = hitRay.point;
                 newPositionIsActive = true;
             }
@@ -42,7 +42,7 @@ public class UnitMovementControllerBase : MonoBehaviour
 
         foreach(var unit in SelectionController.SelectedUnits)
         {
-            Debug.Log("Ordering unit to move");
+            // Debug.Log("Ordering unit to move");
             unit.BeginMoving(newPosition);
         }
 

@@ -22,7 +22,7 @@ public class UnitBase : SelectableObject
     {
         if(transform.position != newDestination)
         {
-            Debug.Log("Starting moving towards the destination");
+            // Debug.Log("Starting moving towards the destination");
             IsMoving = true;
             destination = newDestination;
 
@@ -34,7 +34,7 @@ public class UnitBase : SelectableObject
     {
         if(!IsMoving || transform.position == destination)
         {
-            Debug.Log("Arrived at the destination");
+            // Debug.Log("Arrived at the destination");
             IsMoving = false;
             destination = transform.position;
 
@@ -46,7 +46,7 @@ public class UnitBase : SelectableObject
 
     public virtual void CancelMovement()
     {
-        Debug.Log("Cancelling movement");
+        // Debug.Log("Cancelling movement");
 
         IsMoving = false;
         destination = transform.position;

@@ -8,6 +8,7 @@ public class MainCameraController : MonoBehaviour
     public float CameraRotationSpeed = 1.0f;
     public float maxYRotationAngle = 80f;
 
+    public bool RotateCamera { get; set; } = false;
     private Vector2 currentRotation;
 
     void Start()
@@ -55,7 +56,7 @@ public class MainCameraController : MonoBehaviour
 
     private void Rotate()
     {
-        if (Input.GetMouseButton(1))
+        if (RotateCamera)
         {
             Cursor.lockState = CursorLockMode.Locked;
 
