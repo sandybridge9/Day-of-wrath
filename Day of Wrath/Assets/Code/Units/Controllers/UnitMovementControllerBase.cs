@@ -6,46 +6,28 @@ public class UnitMovementControllerBase : MonoBehaviour
 
     public SelectionController SelectionController;
 
-    private bool newPositionIsActive = false;
     private Vector3 newPosition;
 
-    void Update()
+    public void MoveUnits()
     {
-        TryGetNewPosition();
-
-        OrderSelectedUnitsToMove();
-    }
-
-    private void TryGetNewPosition()
-    {
-        if (Input.GetMouseButtonDown(0)
-            && SelectionController.AnySelectedUnits)
-        {
-            var mousePosition = Input.mousePosition;
-            var castPointRay = Camera.main.ScreenPointToRay(mousePosition);
-
-            if (Physics.Raycast(castPointRay, out var hitRay, Mathf.Infinity, WalkableLayers))
-            {
-                // Debug.Log("Setting new movement position");
-                newPosition = hitRay.point;
-                newPositionIsActive = true;
-            }
-        }
-    }
-
-    private void OrderSelectedUnitsToMove()
-    {
-        if(!newPositionIsActive)
+        if (!SelectionController.AnySelectedUnits)
         {
             return;
         }
 
-        foreach(var unit in SelectionController.SelectedUnits)
+        var mousePosition = Input.mousePosition;
+        var castPointRay = Camera.main.ScreenPointToRay(mousePosition);
+
+        if (!Physics.Raycast(castPointRay, out var hitRay, Mathf.Infinity, WalkableLayers))
         {
-            // Debug.Log("Ordering unit to move");
-            unit.BeginMoving(newPosition);
+            return;
         }
 
-        newPositionIsActive = false;
+        newPosition = hitRay.point;
+
+        foreach (var unit in SelectionController.SelectedUnits)
+        {
+            unit.BeginMoving(newPosition);
+        }
     }
 }
