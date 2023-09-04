@@ -20,7 +20,7 @@ public class MouseInputManager : MonoBehaviour
     {
         unitMovementController = GetComponent<UnitMovementControllerBase>();
         selectionController = GetComponent<SelectionController>();
-        mainCameraController = GetComponent<MainCameraController>();
+        mainCameraController = Camera.main.GetComponent<MainCameraController>();
         //mainCamera = Camera.main;
     }
 
@@ -41,7 +41,7 @@ public class MouseInputManager : MonoBehaviour
             }
             else
             {
-                selectionController.Select();
+                selectionController.PointSelect();
             }
 
             leftClickMouseScreenPositionOnBeginClick = Vector2.zero;

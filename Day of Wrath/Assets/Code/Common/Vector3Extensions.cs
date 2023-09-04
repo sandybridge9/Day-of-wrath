@@ -27,4 +27,7 @@ public static class Vector3Extensions
 
         return new Vector2(xAngle, yAngle);
     }
+
+    public static Vector2 Vector2(this Vector3 vector)
+        => new Vector2(vector.x, vector.y);
 }
