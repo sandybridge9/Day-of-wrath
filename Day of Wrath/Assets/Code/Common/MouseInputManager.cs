@@ -2,26 +2,24 @@ using UnityEngine;
 
 public class MouseInputManager : MonoBehaviour
 {
+    public const float LeftClickMouseMovementDistanceThreshold = 1f;
+    public const float RightClickMouseMovementDistanceThreshold = 40f;
+
     private UnitMovementControllerBase unitMovementController;
     private SelectionController selectionController;
     private MainCameraController mainCameraController;
-    //private Camera mainCamera;
 
-    private float holdThreshold = 0.5f;
-
-    private float currentLeftClickHoldTime = 0f;
-    private float currentRightClickHoldTime = 0f;
-
-    private float MouseMovementDistanceThreshold = 1f;
-    private Vector2 leftClickMouseScreenPositionOnBeginClick = Vector2.zero;
-    private Vector2 rightClickMouseScreenPositionOnBeginClick = Vector2.zero;
+    private Vector2 leftClickMouseScreenPositionOnBeginClick;
+    private Vector2 rightClickMouseScreenPositionOnBeginClick;
 
     void Start()
     {
         unitMovementController = GetComponent<UnitMovementControllerBase>();
         selectionController = GetComponent<SelectionController>();
         mainCameraController = Camera.main.GetComponent<MainCameraController>();
-        //mainCamera = Camera.main;
+
+        leftClickMouseScreenPositionOnBeginClick = Vector2.zero;
+        rightClickMouseScreenPositionOnBeginClick = Vector2.zero;
     }
 
     void Update()
@@ -45,7 +43,6 @@ public class MouseInputManager : MonoBehaviour
             }
 
             leftClickMouseScreenPositionOnBeginClick = Vector2.zero;
-            currentLeftClickHoldTime = 0;
         }
 
         if (Input.GetMouseButtonDown(0))
@@ -55,20 +52,15 @@ public class MouseInputManager : MonoBehaviour
 
         if (Input.GetMouseButton(0))
         {
-            currentLeftClickHoldTime += Time.deltaTime;
-
             if (selectionController.IsSelectionBoxActive)
             {
                 selectionController.ContinueBoxSelection();
             }
-            else if (CheckMouseMovementDistanceThreshold(leftClickMouseScreenPositionOnBeginClick))
+            else if (leftClickMouseScreenPositionOnBeginClick
+                .HasPassedDistanceThreshold(Input.mousePosition, LeftClickMouseMovementDistanceThreshold))
             {
                 selectionController.StartBoxSelection(leftClickMouseScreenPositionOnBeginClick);
             }
-        }
-        else
-        {
-            currentLeftClickHoldTime = 0;
         }
     }
 
@@ -76,15 +68,16 @@ public class MouseInputManager : MonoBehaviour
     {
         if (Input.GetMouseButtonUp(1))
         {
-            if(currentRightClickHoldTime < holdThreshold)
+            rightClickMouseScreenPositionOnBeginClick = Vector2.zero;
+
+            if (mainCameraController.RotateCamera == true)
             {
-                unitMovementController.MoveUnits();
+                mainCameraController.RotateCamera = false;
+
+                return;
             }
 
-            rightClickMouseScreenPositionOnBeginClick = Vector2.zero;
-            currentRightClickHoldTime = 0;
-
-            mainCameraController.RotateCamera = false;
+            unitMovementController.MoveUnits();
         }
 
         if (Input.GetMouseButtonDown(1))
@@ -94,21 +87,11 @@ public class MouseInputManager : MonoBehaviour
 
         if (Input.GetMouseButton(1))
         {
-            currentRightClickHoldTime += Time.deltaTime;
-
-            if(currentRightClickHoldTime > holdThreshold)
+            if(rightClickMouseScreenPositionOnBeginClick
+                .HasPassedDistanceThreshold(Input.mousePosition, RightClickMouseMovementDistanceThreshold))
             {
                 mainCameraController.RotateCamera = true;
             }
         }
-        else
-        {
-            currentRightClickHoldTime = 0;
-        }
-    }
-
-    private bool CheckMouseMovementDistanceThreshold(Vector2 startPosition)
-    {
-        return Vector2.Distance(startPosition, Input.mousePosition) > MouseMovementDistanceThreshold;
     }
 }

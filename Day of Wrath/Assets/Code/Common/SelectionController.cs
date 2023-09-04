@@ -1,15 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.UI.GridLayoutGroup;
 
 public class SelectionController : MonoBehaviour
 {
-    [HideInInspector]
-    public LayerMask SelectableLayers;
-
-    [HideInInspector]
-    public LayerMask GroundLayers;
-
     [HideInInspector]
     public List<UnitBase> SelectedUnits = new List<UnitBase>();
 
@@ -38,19 +31,19 @@ public class SelectionController : MonoBehaviour
         get { return SelectedBuilding != null; }
     }
 
-    public RectTransform SelectionBox;
+    [HideInInspector]
     public bool IsSelectionBoxActive = false;
 
-    private Vector3 selectionBoxStartingPosition;
-    private Vector3 selectionBoxFinishingPosition;
-    private Vector2[] selectionBoxCorners;
+    public RectTransform SelectionBox;
 
-    private RaycastHit hit;
+    private Vector2 selectionBoxUIStartingPosition;
 
-    private MeshCollider selectionBox;
-    private Mesh selectionMesh;
-    private Vector3[] vertices;
-    private Vector3[] vecs;
+    [HideInInspector]
+    public LayerMask SelectableLayers;
+
+    [HideInInspector]
+    public LayerMask GroundLayers;
+
 
     private void Start()
     {
@@ -75,59 +68,36 @@ public class SelectionController : MonoBehaviour
 
         TrySelectHitObject(raycastHit);
     }
+
     public void StartBoxSelection(Vector2 selectionBoxStartingPosition)
     {
         ClearSelection();
 
         SelectionBox.gameObject.SetActive(true);
-        IsSelectionBoxActive = true;
+        SelectionBox.sizeDelta = new Vector2(0, 0);
+        SelectionBox.anchoredPosition = new Vector2(0, 0);
 
-        this.selectionBoxStartingPosition = selectionBoxStartingPosition;
+        IsSelectionBoxActive = true;
+        selectionBoxUIStartingPosition = selectionBoxStartingPosition;
     }
 
     public void ContinueBoxSelection()
     {
         var currentMousePosition = Input.mousePosition;
-        var width = currentMousePosition.x - selectionBoxStartingPosition.x;
-        var height = currentMousePosition.y - selectionBoxStartingPosition.y;
+        var width = currentMousePosition.x - selectionBoxUIStartingPosition.x;
+        var height = currentMousePosition.y - selectionBoxUIStartingPosition.y;
         SelectionBox.sizeDelta = new Vector2(Mathf.Abs(width), Mathf.Abs(height));
-        SelectionBox.anchoredPosition = selectionBoxStartingPosition.Vector2() + new Vector2(width / 2, height / 2);
+        SelectionBox.anchoredPosition = selectionBoxUIStartingPosition + new Vector2(width / 2, height / 2);
     }
 
     public void FinishBoxSelection()
     {
-        vertices = new Vector3[4];
-        vecs = new Vector3[4];
-        int i = 0;
-        selectionBoxFinishingPosition = Input.mousePosition;
-        selectionBoxCorners = GetBoundingBox(selectionBoxStartingPosition, selectionBoxFinishingPosition);
+        var selectionMesh = GenerateSelectionMesh();
 
-        foreach (Vector2 corner in selectionBoxCorners)
-        {
-            Ray ray = Camera.main.ScreenPointToRay(corner);
-
-            if (Physics.Raycast(ray, out hit, 50000.0f, GroundLayers))
-            {
-                vertices[i] = new Vector3(hit.point.x, hit.point.y, hit.point.z);
-                vecs[i] = ray.origin - hit.point;
-                Debug.DrawLine(Camera.main.ScreenToWorldPoint(corner), hit.point, Color.red, 1.0f);
-            }
-            i++;
-        }
-
-        selectionMesh = GenerateSelectionMesh(vertices, vecs);
-
-        selectionBox = gameObject.AddComponent<MeshCollider>();
+        var selectionBox = gameObject.AddComponent<MeshCollider>();
         selectionBox.sharedMesh = selectionMesh;
         selectionBox.convex = true;
         selectionBox.isTrigger = true;
-
-        Debug.Log(selectionBox.transform.position);
-
-        //if (!Input.GetKey(KeyCode.LeftShift))
-        //{
-        //    selected_table.deselectAll();
-        //}
 
         Destroy(selectionBox, 0.02f);
 
@@ -154,63 +124,70 @@ public class SelectionController : MonoBehaviour
         }
     }
 
-
-
-    private Vector2[] GetBoundingBox(Vector2 point1, Vector2 point2)
+    private List<Vector2> GetSelectionBoxCorners(Vector2 selectionBoxStartingPosition, Vector2 selectionBoxFinishingPosition)
     {
-        var bottomLeft = Vector3.Min(point1, point2);
-        var topRight = Vector3.Max(point1, point2);
+        var bottomLeftPoint = Vector3.Min(selectionBoxStartingPosition, selectionBoxFinishingPosition);
+        var topRightPoint = Vector3.Max(selectionBoxStartingPosition, selectionBoxFinishingPosition);
 
-        Vector2[] corners =
+        var corners = new List<Vector2>
         {
-            new Vector2(bottomLeft.x, topRight.y),
-            new Vector2(topRight.x, topRight.y),
-            new Vector2(bottomLeft.x, bottomLeft.y),
-            new Vector2(topRight.x, bottomLeft.y)
+            new Vector2(bottomLeftPoint.x, topRightPoint.y),
+            new Vector2(topRightPoint.x, topRightPoint.y),
+            new Vector2(bottomLeftPoint.x, bottomLeftPoint.y),
+            new Vector2(topRightPoint.x, bottomLeftPoint.y)
         };
 
         return corners;
     }
 
-    private Mesh GenerateSelectionMesh(Vector3[] corners, Vector3[] vecs)
+    private Mesh GenerateSelectionMesh()
     {
-        Vector3[] verts = new Vector3[8];
-        int[] tris = { 0, 1, 2, 2, 1, 3, 4, 6, 0, 0, 6, 2, 6, 7, 2, 2, 7, 3, 7, 5, 3, 3, 5, 1, 5, 0, 1, 1, 4, 0, 4, 5, 6, 6, 5, 7 };
+        var selectionBoxCorners = GetSelectionBoxCorners(selectionBoxUIStartingPosition, Input.mousePosition);
+        var worldPointVertices = new List<Vector3>();
+        var edgeVectors = new List<Vector3>();
+
+        foreach (var selectionBoxCorner in selectionBoxCorners)
+        {
+            var ray = Camera.main.ScreenPointToRay(selectionBoxCorner);
+
+            if (Physics.Raycast(ray, out var rayCastHit, 50000.0f, GroundLayers))
+            {
+                worldPointVertices.Add(new Vector3(rayCastHit.point.x, rayCastHit.point.y, rayCastHit.point.z));
+                edgeVectors.Add(ray.origin - rayCastHit.point);
+                //Debug.DrawLine(Camera.main.ScreenToWorldPoint(selectionBoxCorner), hit.point, Color.red, 1.0f);
+            }
+        }
+
+        if(worldPointVertices.Count < 4 || edgeVectors.Count < 4)
+        {
+            return null;
+        }
+
+        var selectionMeshVertices = new Vector3[8];
+        int[] selectionMeshTriangles = { 0, 1, 2, 2, 1, 3, 4, 6, 0, 0, 6, 2, 6, 7, 2, 2, 7, 3, 7, 5, 3, 3, 5, 1, 5, 0, 1, 1, 4, 0, 4, 5, 6, 6, 5, 7 };
 
         for (int i = 0; i < 4; i++)
         {
-            verts[i] = corners[i];
+            selectionMeshVertices[i] = worldPointVertices[i];
         }
 
         for (int j = 4; j < 8; j++)
         {
-            verts[j] = corners[j - 4] + vecs[j - 4];
+            selectionMeshVertices[j] = worldPointVertices[j - 4] + edgeVectors[j - 4];
         }
 
-        Mesh selectionMesh = new Mesh();
-        selectionMesh.vertices = verts;
-        selectionMesh.triangles = tris;
+        var selectionMesh = new Mesh();
+        selectionMesh.vertices = selectionMeshVertices;
+        selectionMesh.triangles = selectionMeshTriangles;
 
         return selectionMesh;
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        Debug.Log("something entered the atmosphere");
-        var selectableObject = collision.gameObject.GetComponent<SelectableObject>();
-
-        if (selectableObject != null)
-        {
-            AddSelectedObjectToList(selectableObject);
-        }
-    }
-
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("something entered the atmosphere");
         var selectableObject = other.gameObject.GetComponent<SelectableObject>();
-        
-        if(selectableObject != null)
+
+        if (selectableObject != null)
         {
             AddSelectedObjectToList(selectableObject);
         }
