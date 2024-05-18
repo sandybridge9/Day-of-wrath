@@ -8,11 +8,19 @@ public class SettingsMenuController : MonoBehaviour
     public AudioMixer audioMixer;
 
     public TMPro.TMP_Dropdown resolutionDropdown;
-    List<Resolution> resolutions;
+    List<Resolution> resolutions = new List<Resolution>();
 
     private void Start()
     {
-        resolutions = Screen.resolutions.ToList();
+        var supportedResolutions = Screen.resolutions.ToList();
+
+        foreach (var supportedResolution in supportedResolutions)
+        {
+            if(!resolutions.Any(x => x.width == supportedResolution.width && x.height == supportedResolution.height))
+            {
+                resolutions.Add(supportedResolution);
+            }
+        }
 
         resolutionDropdown.ClearOptions();
 
