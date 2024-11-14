@@ -3,72 +3,99 @@ using UnityEngine;
 
 public class SelectionController : MonoBehaviour
 {
-    [HideInInspector]
     public List<UnitBase> SelectedUnits = new List<UnitBase>();
-
-    [HideInInspector]
     public BuildingBase SelectedBuilding = null;
 
-    [HideInInspector]
-    public bool IsSelectionActive
-    {
-        get
-        {
-            return SelectedUnits.Count > 0
-                || SelectedBuilding != null;
-        }
-    }
+    public bool AnySelectedUnits => SelectedUnits.Count > 0;
+    public bool IsBuildingSelected => SelectedBuilding != null;
 
-    [HideInInspector]
-    public bool AnySelectedUnits
-    {
-        get { return SelectedUnits.Count > 0; }
-    }
+    public bool IsMultiSelectEnabled { get; set; } // Flag for multi-selection (Shift key)
 
-    [HideInInspector]
-    public bool IsBuildingSelected
-    {
-        get { return SelectedBuilding != null; }
-    }
+    [SerializeField]
+    private LayerMask selectableLayers;
 
-    [HideInInspector]
+    //public RectTransform SelectionBox;
+    //private Vector2 selectionBoxUIStartingPosition;
     public bool IsSelectionBoxActive = false;
-
-    public RectTransform SelectionBox;
-
-    private Vector2 selectionBoxUIStartingPosition;
-
-    [HideInInspector]
-    public LayerMask SelectableLayers;
-
-    [HideInInspector]
-    public LayerMask GroundLayers;
-
 
     private void Start()
     {
-        SelectableLayers = LayerMask.GetMask(
+        selectableLayers = LayerMask.GetMask(
             GlobalSettings.Layers.UnitLayer,
             GlobalSettings.Layers.BuildingLayer);
-
-        GroundLayers = LayerMask.GetMask(GlobalSettings.Layers.TerrainLayer);
     }
 
     public void PointSelect()
     {
         var mousePosition = Input.mousePosition;
-        var castPointRay = Camera.main.ScreenPointToRay(mousePosition);
+        var ray = Camera.main.ScreenPointToRay(mousePosition);
 
-        if (!Physics.Raycast(castPointRay, out var raycastHit, Mathf.Infinity, SelectableLayers))
+        if (!Physics.Raycast(ray, out var hit, Mathf.Infinity, selectableLayers))
         {
             ClearSelection();
-
             return;
         }
 
-        TrySelectHitObject(raycastHit);
+        var selectableObject = hit.collider.GetComponent<SelectableObject>();
+        if (selectableObject == null) return;
+
+        if (selectableObject.Type == SelectableObjectType.Building)
+        {
+            SelectBuilding(selectableObject as BuildingBase);
+        }
+        else if (selectableObject.Type == SelectableObjectType.Unit)
+        {
+            SelectUnit(selectableObject as UnitBase);
+        }
     }
 
+    private void SelectBuilding(BuildingBase building)
+    {
+        ClearSelection();
+
+        if (building != null)
+        {
+            building.IsSelected = true;
+            SelectedBuilding = building;
+            Debug.Log("Building selected: " + building.name);
+        }
+    }
+
+    private void SelectUnit(UnitBase unit)
+    {
+        if (!IsMultiSelectEnabled)
+        {
+            ClearSelection();
+        }
+
+        if (unit != null)
+        {
+            unit.IsSelected = true;
+            if (!SelectedUnits.Contains(unit))
+            {
+                SelectedUnits.Add(unit);
+                Debug.Log("Unit selected: " + unit.name);
+            }
+        }
+    }
+
+    public void ClearSelection()
+    {
+        if (IsBuildingSelected)
+        {
+            SelectedBuilding.IsSelected = false;
+            SelectedBuilding = null;
+        }
+
+        foreach (var unit in SelectedUnits)
+        {
+            unit.IsSelected = false;
+        }
+        SelectedUnits.Clear();
+    }
+
+    // Box Selection Logic (currently commented out)
+    /*
     public void StartBoxSelection(Vector2 selectionBoxStartingPosition)
     {
         ClearSelection();
@@ -107,39 +134,6 @@ public class SelectionController : MonoBehaviour
         IsSelectionBoxActive = false;
     }
 
-    public void ClearSelection()
-    {
-        if (AnySelectedUnits)
-        {
-            SelectedUnits
-                .ForEach(selectedUnit => selectedUnit.IsSelected = false);
-            SelectedUnits
-                .Clear();
-        }
-
-        if (IsBuildingSelected)
-        {
-            SelectedBuilding.IsSelected = false;
-            SelectedBuilding = null;
-        }
-    }
-
-    private List<Vector2> GetSelectionBoxCorners(Vector2 selectionBoxStartingPosition, Vector2 selectionBoxFinishingPosition)
-    {
-        var bottomLeftPoint = Vector3.Min(selectionBoxStartingPosition, selectionBoxFinishingPosition);
-        var topRightPoint = Vector3.Max(selectionBoxStartingPosition, selectionBoxFinishingPosition);
-
-        var corners = new List<Vector2>
-        {
-            new Vector2(bottomLeftPoint.x, topRightPoint.y),
-            new Vector2(topRightPoint.x, topRightPoint.y),
-            new Vector2(bottomLeftPoint.x, bottomLeftPoint.y),
-            new Vector2(topRightPoint.x, bottomLeftPoint.y)
-        };
-
-        return corners;
-    }
-
     private Mesh GenerateSelectionMesh()
     {
         var selectionBoxCorners = GetSelectionBoxCorners(selectionBoxUIStartingPosition, Input.mousePosition);
@@ -150,15 +144,14 @@ public class SelectionController : MonoBehaviour
         {
             var ray = Camera.main.ScreenPointToRay(selectionBoxCorner);
 
-            if (Physics.Raycast(ray, out var rayCastHit, 50000.0f, GroundLayers))
+            if (Physics.Raycast(ray, out var rayCastHit, 50000.0f, GlobalSettings.Layers.GroundLayers))
             {
                 worldPointVertices.Add(new Vector3(rayCastHit.point.x, rayCastHit.point.y, rayCastHit.point.z));
                 edgeVectors.Add(ray.origin - rayCastHit.point);
-                //Debug.DrawLine(Camera.main.ScreenToWorldPoint(selectionBoxCorner), hit.point, Color.red, 1.0f);
             }
         }
 
-        if(worldPointVertices.Count < 4 || edgeVectors.Count < 4)
+        if (worldPointVertices.Count < 4 || edgeVectors.Count < 4)
         {
             return null;
         }
@@ -183,6 +176,22 @@ public class SelectionController : MonoBehaviour
         return selectionMesh;
     }
 
+    private List<Vector2> GetSelectionBoxCorners(Vector2 selectionBoxStartingPosition, Vector2 selectionBoxFinishingPosition)
+    {
+        var bottomLeftPoint = Vector3.Min(selectionBoxStartingPosition, selectionBoxFinishingPosition);
+        var topRightPoint = Vector3.Max(selectionBoxStartingPosition, selectionBoxFinishingPosition);
+
+        var corners = new List<Vector2>
+        {
+            new Vector2(bottomLeftPoint.x, topRightPoint.y),
+            new Vector2(topRightPoint.x, topRightPoint.y),
+            new Vector2(bottomLeftPoint.x, bottomLeftPoint.y),
+            new Vector2(topRightPoint.x, bottomLeftPoint.y)
+        };
+
+        return corners;
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         var selectableObject = other.gameObject.GetComponent<SelectableObject>();
@@ -191,32 +200,6 @@ public class SelectionController : MonoBehaviour
         {
             AddSelectedObjectToList(selectableObject);
         }
-    }
-
-    private void TrySelectHitObject(RaycastHit raycastHit)
-    {
-        var hitGameObject = raycastHit.collider.gameObject;
-
-        if (hitGameObject == null)
-        {
-            return;
-        }
-
-        var selectableObject = hitGameObject.GetComponent<SelectableObject>();
-
-        if (selectableObject == null)
-        {
-            ClearSelection();
-
-            return;
-        }
-
-        if (!Input.GetKey(KeyCode.LeftShift))
-        {
-            ClearSelection();
-        }
-
-        AddSelectedObjectToList(selectableObject);
     }
 
     private void AddSelectedObjectToList(SelectableObject selectableObject)
@@ -253,4 +236,5 @@ public class SelectionController : MonoBehaviour
                 break;
         }
     }
+    */
 }

@@ -8,4 +8,11 @@ public static class GlobalSettings
 
         public const string BuildingLayer = "Building";
     }
+
+    public static class MouseInput
+    {
+        public const float LeftClickMouseMovementDistanceThreshold = 1f;
+
+        public const float CameraRotationDistanceThreshold = 40f;
+    }
 }

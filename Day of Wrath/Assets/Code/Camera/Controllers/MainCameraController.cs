@@ -1,5 +1,4 @@
 using UnityEngine;
-using Cursor = UnityEngine.Cursor;
 
 public class MainCameraController : MonoBehaviour
 {
@@ -20,56 +19,44 @@ public class MainCameraController : MonoBehaviour
 
     void Update()
     {
-        Move();
-
-        Zoom();
-
-        Rotate();
-    }
-
-    private void Move()
-    {
-        var horizontalInput = Input.GetAxis("Horizontal");
-        var verticalInput = Input.GetAxis("Vertical");
-        
-        if(horizontalInput != 0  || verticalInput != 0)
+        if (RotateCamera)
         {
-            var movementVector = Vector3.ClampMagnitude(
-                transform.TransformDirection(new Vector3(horizontalInput, 0, verticalInput)),
-                CameraMovementSpeed);
-
-            movementVector.y = 0;
-
-            transform.position += CameraMovementSpeed * Time.deltaTime * movementVector;
+            Rotate();
+        }
+        else
+        {
+            // Reset the cursor when not rotating
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
     }
 
-    private void Zoom()
+    public void MoveCamera(float horizontalInput, float verticalInput)
     {
-        var scrollWheelInput = Input.GetAxis("Mouse ScrollWheel");
+        Vector3 movementVector = Vector3.ClampMagnitude(
+            transform.TransformDirection(new Vector3(horizontalInput, 0, verticalInput)),
+            CameraMovementSpeed);
 
-        if (scrollWheelInput != 0)
-        {
-            transform.position += scrollWheelInput * CameraZoomSpeed * transform.forward;
-        }
+        movementVector.y = 0;
+        transform.position += CameraMovementSpeed * Time.deltaTime * movementVector;
+    }
+
+    public void ZoomCamera(float scrollWheelInput)
+    {
+        transform.position += scrollWheelInput * CameraZoomSpeed * transform.forward;
     }
 
     private void Rotate()
     {
-        if (RotateCamera)
-        {
-            Cursor.lockState = CursorLockMode.Locked;
+        // Lock cursor and hide it when rotating
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
 
-            currentRotation.x += Input.GetAxis("Mouse X") * CameraRotationSpeed;
-            currentRotation.y -= Input.GetAxis("Mouse Y") * CameraRotationSpeed;
-            currentRotation.x = Mathf.Repeat(currentRotation.x, 360);
-            currentRotation.y = Mathf.Clamp(currentRotation.y, -maxYRotationAngle, maxYRotationAngle);
+        currentRotation.x += Input.GetAxis("Mouse X") * CameraRotationSpeed;
+        currentRotation.y -= Input.GetAxis("Mouse Y") * CameraRotationSpeed;
+        currentRotation.x = Mathf.Repeat(currentRotation.x, 360);
+        currentRotation.y = Mathf.Clamp(currentRotation.y, -maxYRotationAngle, maxYRotationAngle);
 
-            transform.rotation = Quaternion.Euler(currentRotation.y, currentRotation.x, 0);
-        }
-        else
-        {
-            Cursor.lockState = CursorLockMode.None;
-        }
+        transform.rotation = Quaternion.Euler(currentRotation.y, currentRotation.x, 0);
     }
 }
