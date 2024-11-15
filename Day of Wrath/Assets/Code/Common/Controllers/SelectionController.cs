@@ -3,41 +3,45 @@ using UnityEngine;
 
 public class SelectionController : MonoBehaviour
 {
+    //public RectTransform SelectionBox;
+
+    [HideInInspector]
     public List<UnitBase> SelectedUnits = new List<UnitBase>();
+
+    [HideInInspector]
     public BuildingBase SelectedBuilding = null;
 
+    [HideInInspector]
     public bool AnySelectedUnits => SelectedUnits.Count > 0;
+
+    [HideInInspector]
     public bool IsBuildingSelected => SelectedBuilding != null;
 
-    public bool IsMultiSelectEnabled { get; set; } // Flag for multi-selection (Shift key)
+    [HideInInspector]
+    public bool IsMultiSelectEnabled { get; set; }
 
-    [SerializeField]
-    private LayerMask selectableLayers;
-
-    //public RectTransform SelectionBox;
-    //private Vector2 selectionBoxUIStartingPosition;
+    [HideInInspector]
     public bool IsSelectionBoxActive = false;
 
-    private void Start()
-    {
-        selectableLayers = LayerMask.GetMask(
-            GlobalSettings.Layers.UnitLayer,
-            GlobalSettings.Layers.BuildingLayer);
-    }
+    //private Vector2 selectionBoxUIStartingPosition;
 
     public void PointSelect()
     {
         var mousePosition = Input.mousePosition;
         var ray = Camera.main.ScreenPointToRay(mousePosition);
 
-        if (!Physics.Raycast(ray, out var hit, Mathf.Infinity, selectableLayers))
+        if (!Physics.Raycast(ray, out var hit, Mathf.Infinity, LayerManager.SelectableLayers))
         {
             ClearSelection();
             return;
         }
 
         var selectableObject = hit.collider.GetComponent<SelectableObject>();
-        if (selectableObject == null) return;
+
+        if (selectableObject == null)
+        {
+            return;
+        }
 
         if (selectableObject.Type == SelectableObjectType.Building)
         {
@@ -91,6 +95,7 @@ public class SelectionController : MonoBehaviour
         {
             unit.IsSelected = false;
         }
+
         SelectedUnits.Clear();
     }
 

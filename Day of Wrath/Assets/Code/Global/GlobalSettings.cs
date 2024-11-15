@@ -15,4 +15,17 @@ public static class GlobalSettings
 
         public const float CameraRotationDistanceThreshold = 40f;
     }
+
+    public static class Camera
+    {
+        public const float MovementSpeed = 10.0f;
+        public const float ZoomSpeed = 10.0f;
+        public const float RotationSpeed = 1.0f;
+        public const float MaxYRotationAngle = 80f;
+    }
+
+    public static class Buildings
+    {
+        public const float RotationSpeed = 90f;
+    }
 }

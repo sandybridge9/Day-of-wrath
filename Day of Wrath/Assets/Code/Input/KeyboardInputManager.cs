@@ -53,7 +53,6 @@ public class KeyboardInputManager : MonoBehaviour
 
     private void HandleMultiSelectKey()
     {
-        // Update IsMultiSelectEnabled in SelectionController based on Shift key
         selectionController.IsMultiSelectEnabled = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
     }
 }

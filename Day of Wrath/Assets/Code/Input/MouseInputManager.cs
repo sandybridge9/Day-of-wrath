@@ -100,6 +100,7 @@ public class MouseInputManager : MonoBehaviour
     private void HandleScrollWheel()
     {
         float scrollWheelInput = Input.GetAxis("Mouse ScrollWheel");
+
         if (scrollWheelInput != 0)
         {
             mainCameraController.ZoomCamera(scrollWheelInput);

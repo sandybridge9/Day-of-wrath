@@ -3,19 +3,19 @@ using UnityEngine;
 public class BuildingController : MonoBehaviour
 {
     public GameObject buildingPrefab;
+
     private GameObject currentBuilding;
     private Renderer buildingRenderer;
 
-    public Color canBuildColor = new Color(0, 1, 0, 0.5f);
-    public Color cannotBuildColor = new Color(1, 0, 0, 0.5f);
+    public Color canBuildColor = new(0, 1, 0, 0.5f);
+    public Color cannotBuildColor = new(1, 0, 0, 0.5f);
 
     private Color originalColor;
-    public LayerMask groundLayer;
-    public LayerMask blockingLayers;
-    public float rotationSpeed = 90f;
+
+    public float rotationSpeed = GlobalSettings.Buildings.RotationSpeed;
 
     private bool isPlacingBuilding = false;
-    private bool canPlace = false;
+    private bool canPlaceBuilding = false;
 
     void Update()
     {
@@ -52,7 +52,7 @@ public class BuildingController : MonoBehaviour
     private void UpdateBuildingPosition()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, groundLayer))
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, LayerManager.GroundLayers))
         {
             float buildingHalfHeight = currentBuilding.GetComponent<Collider>().bounds.extents.y;
             currentBuilding.transform.position = hit.point + new Vector3(0, buildingHalfHeight, 0);
@@ -67,16 +67,16 @@ public class BuildingController : MonoBehaviour
         Collider buildingCollider = currentBuilding.GetComponent<Collider>();
         buildingCollider.enabled = false;
 
-        Collider[] colliders = Physics.OverlapBox(buildPosition, halfExtents, Quaternion.identity, blockingLayers);
+        Collider[] colliders = Physics.OverlapBox(buildPosition, halfExtents, Quaternion.identity, LayerManager.BlockingLayers);
         buildingCollider.enabled = true;
 
-        canPlace = colliders.Length == 0;
-        SetBuildingTransparency(canPlace ? canBuildColor : cannotBuildColor);
+        canPlaceBuilding = colliders.Length == 0;
+        SetBuildingTransparency(canPlaceBuilding ? canBuildColor : cannotBuildColor);
     }
 
     public void PlaceBuilding()
     {
-        if (!canPlace)
+        if (!canPlaceBuilding)
         {
             Debug.Log("Cannot place the building here. Position is invalid (red).");
             return;

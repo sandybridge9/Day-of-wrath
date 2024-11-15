@@ -2,12 +2,14 @@ using UnityEngine;
 
 public class MainCameraController : MonoBehaviour
 {
-    public float CameraMovementSpeed = 10.0f;
-    public float CameraZoomSpeed = 10.0f;
-    public float CameraRotationSpeed = 1.0f;
-    public float maxYRotationAngle = 80f;
+    public float MovementSpeed = GlobalSettings.Camera.MovementSpeed;
+    public float ZoomSpeed = GlobalSettings.Camera.ZoomSpeed;
+    public float RotationSpeed = GlobalSettings.Camera.RotationSpeed;
+    public float MaxYRotationAngle = GlobalSettings.Camera.MaxYRotationAngle;
 
+    [HideInInspector]
     public bool RotateCamera { get; set; } = false;
+
     private Vector2 currentRotation;
 
     void Start()
@@ -25,7 +27,6 @@ public class MainCameraController : MonoBehaviour
         }
         else
         {
-            // Reset the cursor when not rotating
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
@@ -35,27 +36,26 @@ public class MainCameraController : MonoBehaviour
     {
         Vector3 movementVector = Vector3.ClampMagnitude(
             transform.TransformDirection(new Vector3(horizontalInput, 0, verticalInput)),
-            CameraMovementSpeed);
+            MovementSpeed);
 
         movementVector.y = 0;
-        transform.position += CameraMovementSpeed * Time.deltaTime * movementVector;
+        transform.position += MovementSpeed * Time.deltaTime * movementVector;
     }
 
     public void ZoomCamera(float scrollWheelInput)
     {
-        transform.position += scrollWheelInput * CameraZoomSpeed * transform.forward;
+        transform.position += scrollWheelInput * ZoomSpeed * transform.forward;
     }
 
     private void Rotate()
     {
-        // Lock cursor and hide it when rotating
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        currentRotation.x += Input.GetAxis("Mouse X") * CameraRotationSpeed;
-        currentRotation.y -= Input.GetAxis("Mouse Y") * CameraRotationSpeed;
+        currentRotation.x += Input.GetAxis("Mouse X") * RotationSpeed;
+        currentRotation.y -= Input.GetAxis("Mouse Y") * RotationSpeed;
         currentRotation.x = Mathf.Repeat(currentRotation.x, 360);
-        currentRotation.y = Mathf.Clamp(currentRotation.y, -maxYRotationAngle, maxYRotationAngle);
+        currentRotation.y = Mathf.Clamp(currentRotation.y, -MaxYRotationAngle, MaxYRotationAngle);
 
         transform.rotation = Quaternion.Euler(currentRotation.y, currentRotation.x, 0);
     }
