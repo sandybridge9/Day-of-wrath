@@ -2,9 +2,9 @@ using UnityEngine;
 
 public class UnitBase : SelectableObject
 {
-    public float Health;
+    public float Health = 100f;
 
-    public float MovementSpeed;
+    public float MovementSpeed = 5f;
 
     private bool IsMoving;
     private Vector3 destination;

@@ -10,6 +10,9 @@ public class MainCameraController : MonoBehaviour
     [HideInInspector]
     public bool RotateCamera { get; set; } = false;
 
+    [HideInInspector]
+    public bool AllowCameraRotation { get; set; } = false;
+
     private Vector2 currentRotation;
 
     void Start()
@@ -21,7 +24,7 @@ public class MainCameraController : MonoBehaviour
 
     void Update()
     {
-        if (RotateCamera)
+        if (RotateCamera && AllowCameraRotation)
         {
             Rotate();
         }

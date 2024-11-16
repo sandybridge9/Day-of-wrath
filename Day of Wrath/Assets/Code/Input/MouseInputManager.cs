@@ -5,6 +5,7 @@ public class MouseInputManager : MonoBehaviour
     private SelectionController selectionController;
     private BuildingController buildingController;
     private MainCameraController mainCameraController;
+    private UnitCommandController unitCommandController;
 
     private Vector2 leftClickStartPos;
     private Vector2 rightClickStartPos;
@@ -14,6 +15,7 @@ public class MouseInputManager : MonoBehaviour
         selectionController = GetComponent<SelectionController>();
         buildingController = GetComponent<BuildingController>();
         mainCameraController = Camera.main.GetComponent<MainCameraController>();
+        unitCommandController = GetComponent<UnitCommandController>(); // Reference the new controller
 
         ResetMousePositions();
     }
@@ -27,39 +29,15 @@ public class MouseInputManager : MonoBehaviour
 
     private void HandleLeftClick()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            leftClickStartPos = Input.mousePosition;
-
-            // Uncomment the following line to enable box selection starting
-            // selectionController.StartBoxSelection(leftClickStartPos);
-        }
-
-        if (Input.GetMouseButton(0))
-        {
-            // Uncomment the following line to enable box selection continuation
-            // selectionController.ContinueBoxSelection();
-        }
-
         if (Input.GetMouseButtonUp(0))
         {
-            if (!selectionController.IsSelectionBoxActive)
+            if (buildingController != null && buildingController.IsPlacingBuilding())
             {
-                // Check if we're placing a building; if so, place it
-                if (buildingController != null && buildingController.IsPlacingBuilding())
-                {
-                    buildingController.PlaceBuilding();
-                }
-                else
-                {
-                    // Otherwise, perform point selection
-                    selectionController.PointSelect();
-                }
+                buildingController.PlaceBuilding();
             }
             else
             {
-                // Uncomment the following line to enable box selection finishing
-                // selectionController.FinishBoxSelection();
+                selectionController.PointSelect();
             }
 
             ResetMousePositions();
@@ -75,7 +53,8 @@ public class MouseInputManager : MonoBehaviour
 
         if (Input.GetMouseButton(1))
         {
-            if (rightClickStartPos.HasPassedDistanceThreshold(Input.mousePosition, GlobalSettings.MouseInput.CameraRotationDistanceThreshold))
+            if (mainCameraController.AllowCameraRotation
+                && rightClickStartPos.HasPassedDistanceThreshold(Input.mousePosition, GlobalSettings.MouseInput.CameraRotationDistanceThreshold))
             {
                 mainCameraController.RotateCamera = true;
             }
@@ -86,13 +65,25 @@ public class MouseInputManager : MonoBehaviour
             mainCameraController.RotateCamera = false;
             rightClickStartPos = Vector2.zero;
 
+            if (mainCameraController.AllowCameraRotation)
+            {
+                return;
+            }
+
             if (buildingController != null && buildingController.IsPlacingBuilding())
             {
                 buildingController.CancelPlacement();
             }
             else if (selectionController.AnySelectedUnits)
             {
-                selectionController.ClearSelection();
+                Debug.Log("boss we got selected units, need to move em.");
+
+                // Issue a move command for selected units via UnitCommandController
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, LayerManager.WalkableLayers))
+                {
+                    unitCommandController.MoveSelectedUnits(hit.point); // Pass target to UnitCommandController
+                }
             }
         }
     }

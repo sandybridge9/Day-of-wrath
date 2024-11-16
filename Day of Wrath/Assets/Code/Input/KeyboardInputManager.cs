@@ -16,6 +16,7 @@ public class KeyboardInputManager : MonoBehaviour
     void Update()
     {
         HandleCameraMovement();
+        HandleCameraRotationKey();
         HandleBuildingInputs();
         HandleMultiSelectKey();
     }
@@ -54,5 +55,18 @@ public class KeyboardInputManager : MonoBehaviour
     private void HandleMultiSelectKey()
     {
         selectionController.IsMultiSelectEnabled = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+    }
+
+    private void HandleCameraRotationKey()
+    {
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            mainCameraController.AllowCameraRotation = true;
+        }
+
+        if (Input.GetKeyUp(KeyCode.R))
+        {
+            mainCameraController.AllowCameraRotation = false;
+        }
     }
 }
