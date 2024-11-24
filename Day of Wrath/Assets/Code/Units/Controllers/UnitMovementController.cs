@@ -6,12 +6,17 @@ public class UnitMovementController : MonoBehaviour
     private Vector3 targetPosition;
     private bool isMoving = false;
 
-    [SerializeField]
-    private float groundOffset = 0.1f; // Ensures the unit stays slightly above the ground
+    private float heightOffset = 0f;
 
     private void Start()
     {
         unitBase = GetComponent<UnitBase>();
+
+        Collider unitCollider = GetComponent<Collider>();
+        if (unitCollider != null)
+        {
+            heightOffset = unitCollider.bounds.extents.y;
+        }
     }
 
     private void Update()
@@ -24,7 +29,7 @@ public class UnitMovementController : MonoBehaviour
 
     public void SetTargetPosition(Vector3 position)
     {
-        targetPosition = AdjustForGroundOffset(position);
+        targetPosition = AdjustForHeightOffset(position);
         isMoving = true;
     }
 
@@ -39,9 +44,8 @@ public class UnitMovementController : MonoBehaviour
         }
     }
 
-    private Vector3 AdjustForGroundOffset(Vector3 position)
+    private Vector3 AdjustForHeightOffset(Vector3 position)
     {
-        // Adjust the target position to include the ground offset
-        return new Vector3(position.x, position.y + groundOffset, position.z);
+        return new Vector3(position.x, position.y + heightOffset, position.z);
     }
 }
