@@ -3,7 +3,7 @@ using UnityEngine;
 public class MouseInputManager : MonoBehaviour
 {
     private SelectionController selectionController;
-    private BuildingController buildingController;
+    private BuildingPlacementController buildingController;
     private MainCameraController mainCameraController;
     private UnitCommandController unitCommandController;
 
@@ -13,7 +13,7 @@ public class MouseInputManager : MonoBehaviour
     void Start()
     {
         selectionController = GetComponent<SelectionController>();
-        buildingController = GetComponent<BuildingController>();
+        buildingController = GetComponent<BuildingPlacementController>();
         mainCameraController = Camera.main.GetComponent<MainCameraController>();
         unitCommandController = GetComponent<UnitCommandController>(); // Reference the new controller
 

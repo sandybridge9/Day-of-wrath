@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BuildingController : MonoBehaviour
+public class BuildingPlacementController : MonoBehaviour
 {
     public GameObject buildingPrefab;
 

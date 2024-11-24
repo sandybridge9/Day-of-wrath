@@ -3,13 +3,13 @@
 public class KeyboardInputManager : MonoBehaviour
 {
     private MainCameraController mainCameraController;
-    private BuildingController buildingController;
+    private BuildingPlacementController buildingController;
     private SelectionController selectionController;
 
     void Start()
     {
         mainCameraController = Camera.main.GetComponent<MainCameraController>();
-        buildingController = GetComponent<BuildingController>();
+        buildingController = GetComponent<BuildingPlacementController>();
         selectionController = GetComponent<SelectionController>();
     }
 
