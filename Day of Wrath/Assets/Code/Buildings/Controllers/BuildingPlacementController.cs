@@ -4,6 +4,9 @@ public class BuildingPlacementController : MonoBehaviour
 {
     public GameObject buildingPrefab;
 
+    private LayerMask groundLayers;
+    private LayerMask blockingLayers;
+
     private GameObject currentBuilding;
     private Renderer buildingRenderer;
 
@@ -17,7 +20,13 @@ public class BuildingPlacementController : MonoBehaviour
     private bool isPlacingBuilding = false;
     private bool canPlaceBuilding = false;
 
-    void Update()
+    private void Start()
+    {
+        groundLayers = LayerManager.GroundLayers;
+        blockingLayers = LayerManager.BlockingLayers;
+    }
+
+    private void Update()
     {
         if (isPlacingBuilding)
         {
@@ -52,7 +61,7 @@ public class BuildingPlacementController : MonoBehaviour
     private void UpdateBuildingPosition()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, LayerManager.GroundLayers))
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, groundLayers))
         {
             float buildingHalfHeight = currentBuilding.GetComponent<Collider>().bounds.extents.y;
             currentBuilding.transform.position = hit.point + new Vector3(0, buildingHalfHeight, 0);
@@ -67,7 +76,7 @@ public class BuildingPlacementController : MonoBehaviour
         Collider buildingCollider = currentBuilding.GetComponent<Collider>();
         buildingCollider.enabled = false;
 
-        Collider[] colliders = Physics.OverlapBox(buildPosition, halfExtents, Quaternion.identity, LayerManager.BlockingLayers);
+        Collider[] colliders = Physics.OverlapBox(buildPosition, halfExtents, Quaternion.identity, blockingLayers);
         buildingCollider.enabled = true;
 
         canPlaceBuilding = colliders.Length == 0;

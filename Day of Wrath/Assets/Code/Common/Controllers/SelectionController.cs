@@ -16,6 +16,9 @@ public class SelectionController : MonoBehaviour
     public bool IsBuildingSelected => SelectedBuilding != null;
 
     [HideInInspector]
+    public bool IsAnythingSelected => AnySelectedUnits || IsBuildingSelected;
+
+    [HideInInspector]
     public bool IsMultiSelectEnabled { get; set; }
 
     public void PointSelect()

@@ -10,12 +10,16 @@ public class MouseInputManager : MonoBehaviour
     private Vector2 leftClickStartPos;
     private Vector2 rightClickStartPos;
 
+    private LayerMask walkableLayers;
+
     void Start()
     {
         selectionController = GetComponent<SelectionController>();
         buildingController = GetComponent<BuildingPlacementController>();
         mainCameraController = Camera.main.GetComponent<MainCameraController>();
-        unitCommandController = GetComponent<UnitCommandController>(); // Reference the new controller
+        unitCommandController = GetComponent<UnitCommandController>();
+
+        walkableLayers = LayerManager.WalkableLayers;
 
         ResetMousePositions();
     }
@@ -78,11 +82,10 @@ public class MouseInputManager : MonoBehaviour
             {
                 Debug.Log("boss we got selected units, need to move em.");
 
-                // Issue a move command for selected units via UnitCommandController
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, LayerManager.WalkableLayers))
+                if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, walkableLayers))
                 {
-                    unitCommandController.MoveSelectedUnits(hit.point); // Pass target to UnitCommandController
+                    unitCommandController.MoveSelectedUnits(hit.point);
                 }
             }
         }

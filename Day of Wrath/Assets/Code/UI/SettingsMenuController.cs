@@ -8,7 +8,7 @@ public class SettingsMenuController : MonoBehaviour
     public AudioMixer audioMixer;
 
     public TMPro.TMP_Dropdown resolutionDropdown;
-    List<Resolution> resolutions = new List<Resolution>();
+    private readonly List<Resolution> resolutions = new List<Resolution>();
 
     private void Start()
     {

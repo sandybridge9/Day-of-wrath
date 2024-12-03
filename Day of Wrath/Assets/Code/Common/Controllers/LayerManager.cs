@@ -16,4 +16,6 @@ public static class LayerManager
         GlobalSettings.Layers.BuildingLayer,
         GlobalSettings.Layers.TerrainLayer
     );
+
+    public static LayerMask UnitLayer => LayerMask.GetMask(GlobalSettings.Layers.UnitLayer);
 }

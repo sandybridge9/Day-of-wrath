@@ -5,12 +5,14 @@ public class KeyboardInputManager : MonoBehaviour
     private MainCameraController mainCameraController;
     private BuildingPlacementController buildingController;
     private SelectionController selectionController;
+    private BuildingActionController buildingActionController;
 
     void Start()
     {
         mainCameraController = Camera.main.GetComponent<MainCameraController>();
         buildingController = GetComponent<BuildingPlacementController>();
         selectionController = GetComponent<SelectionController>();
+        buildingActionController = GetComponent<BuildingActionController>();
     }
 
     void Update()
@@ -19,6 +21,7 @@ public class KeyboardInputManager : MonoBehaviour
         HandleCameraRotationKey();
         HandleBuildingInputs();
         HandleMultiSelectKey();
+        HandleTroopTraining();
     }
 
     private void HandleCameraMovement()
@@ -67,6 +70,14 @@ public class KeyboardInputManager : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.R))
         {
             mainCameraController.AllowCameraRotation = false;
+        }
+    }
+
+    private void HandleTroopTraining()
+    {
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            buildingActionController.TryTrainUnit();
         }
     }
 }

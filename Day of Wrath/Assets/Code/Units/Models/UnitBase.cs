@@ -3,7 +3,6 @@ using UnityEngine;
 public class UnitBase : SelectableObject
 {
     public float Health = 100f;
-
     public float MovementSpeed = 5f;
 
     private bool IsMoving;
@@ -11,10 +10,8 @@ public class UnitBase : SelectableObject
 
     public override SelectableObjectType Type { get; } = SelectableObjectType.Unit;
 
-    public override void Update()
+    public void Update()
     {
-        base.Update();
-
         Move();
     }
 
@@ -22,7 +19,6 @@ public class UnitBase : SelectableObject
     {
         if(transform.position != newDestination)
         {
-            // Debug.Log("Starting moving towards the destination");
             IsMoving = true;
             destination = newDestination;
 
@@ -34,7 +30,6 @@ public class UnitBase : SelectableObject
     {
         if(!IsMoving || transform.position == destination)
         {
-            // Debug.Log("Arrived at the destination");
             IsMoving = false;
             destination = transform.position;
 
@@ -46,8 +41,6 @@ public class UnitBase : SelectableObject
 
     public virtual void CancelMovement()
     {
-        // Debug.Log("Cancelling movement");
-
         IsMoving = false;
         destination = transform.position;
     }
