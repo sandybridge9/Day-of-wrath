@@ -44,6 +44,7 @@ GameObject:
   - component: {fileID: 1687624871101484708}
   - component: {fileID: 8535201787949525512}
   - component: {fileID: 5443808984428009430}
+  - component: {fileID: 248484928725519013}
   m_Layer: 7
   m_Name: BarrackDefault
   m_TagString: Untagged
@@ -151,5 +152,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Health: 100
-  TroopPrefab: {fileID: 76793062159365010, guid: 4439052a5a207bc4a99052d348d2cb15, type: 3}
   SpawnPoint: {fileID: 1678475766604727817}
+--- !u!114 &248484928725519013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5450972257880111024}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b57674e495e690547bc560526c4342ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SelectionIndicatorPrefab: {fileID: 8101361003961117983, guid: 202d225e6e4dc6f40ba159e70b16e133, type: 3}

@@ -10,8 +10,10 @@ public class UnitBase : SelectableObject
 
     public override SelectableObjectType Type { get; } = SelectableObjectType.Unit;
 
-    public void Update()
+    protected override void Update()
     {
+        base.Update();
+
         Move();
     }
 

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3707506226171126314}
   - component: {fileID: 6136490342728278762}
   - component: {fileID: 7753059487515927085}
+  - component: {fileID: 5999868664056456824}
   m_Layer: 6
   m_Name: UnitDefault
   m_TagString: Untagged
@@ -133,3 +134,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Health: 100
   MovementSpeed: 10
+--- !u!114 &5999868664056456824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76793062159365010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b57674e495e690547bc560526c4342ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SelectionIndicatorPrefab: {fileID: 8101361003961117983, guid: 202d225e6e4dc6f40ba159e70b16e133, type: 3}
