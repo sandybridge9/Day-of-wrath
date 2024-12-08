@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BuildingPlacementController : MonoBehaviour
@@ -7,18 +8,21 @@ public class BuildingPlacementController : MonoBehaviour
     private LayerMask groundLayers;
     private LayerMask blockingLayers;
 
-    private GameObject currentBuilding;
-    private Renderer buildingRenderer;
+    public float rotationSpeed = GlobalSettings.Buildings.RotationSpeed;
+
+    private bool isPlacingBuilding = false;
+
+    private bool couldPlaceBuildingLastFrame = false;
+    private bool canPlaceBuilding = false;
 
     public Color canBuildColor = new(0, 1, 0, 0.5f);
     public Color cannotBuildColor = new(1, 0, 0, 0.5f);
 
-    private Color originalColor;
+    private GameObject currentBuilding;
 
-    public float rotationSpeed = GlobalSettings.Buildings.RotationSpeed;
-
-    private bool isPlacingBuilding = false;
-    private bool canPlaceBuilding = false;
+    private List<Material> originalMaterials = new List<Material>();
+    private List<Material> currentMaterials = new List<Material>();
+    private List<Renderer> renderers = new List<Renderer>();
 
     private void Start()
     {
@@ -35,6 +39,11 @@ public class BuildingPlacementController : MonoBehaviour
         }
     }
 
+    public bool IsPlacingBuilding()
+    {
+        return isPlacingBuilding;
+    }
+
     public void StartBuildingPlacement()
     {
         if (currentBuilding != null)
@@ -43,11 +52,20 @@ public class BuildingPlacementController : MonoBehaviour
         }
 
         currentBuilding = Instantiate(buildingPrefab);
-        buildingRenderer = currentBuilding.GetComponent<Renderer>();
-        originalColor = buildingRenderer.material.color;
+        renderers.AddRange(currentBuilding.GetComponents<Renderer>());
+        renderers.AddRange(currentBuilding.GetComponentsInChildren<Renderer>());
 
-        SetBuildingTransparency(canBuildColor);
+        foreach (var renderer in renderers)
+        {
+            foreach (var material in renderer.materials)
+            {
+                originalMaterials.Add(new Material(material));
+                currentMaterials.Add(material);
+            }
+        }
+
         isPlacingBuilding = true;
+        CheckPlacementValidity();
     }
 
     public void RotateBuilding(int direction)
@@ -68,6 +86,21 @@ public class BuildingPlacementController : MonoBehaviour
         }
     }
 
+    public void CancelPlacement()
+    {
+        originalMaterials.Clear();
+        currentMaterials.Clear();
+        renderers.Clear();
+
+        if (currentBuilding != null)
+        {
+            Destroy(currentBuilding);
+        }
+
+        isPlacingBuilding = false;
+        currentBuilding = null;
+    }
+
     private void CheckPlacementValidity()
     {
         Vector3 buildPosition = currentBuilding.transform.position;
@@ -80,7 +113,13 @@ public class BuildingPlacementController : MonoBehaviour
         buildingCollider.enabled = true;
 
         canPlaceBuilding = colliders.Length == 0;
-        SetBuildingTransparency(canPlaceBuilding ? canBuildColor : cannotBuildColor);
+
+        if (couldPlaceBuildingLastFrame == canPlaceBuilding)
+        {
+            SetBuildingTransparency(canPlaceBuilding ? canBuildColor : cannotBuildColor);
+        }
+
+        couldPlaceBuildingLastFrame = canPlaceBuilding;
     }
 
     public void PlaceBuilding()
@@ -92,31 +131,43 @@ public class BuildingPlacementController : MonoBehaviour
         }
 
         Debug.Log("Building placed successfully!");
-        SetBuildingTransparency(originalColor);
-        isPlacingBuilding = false;
-        currentBuilding = null;
-    }
 
-    public void CancelPlacement()
-    {
-        if (currentBuilding != null)
-        {
-            Destroy(currentBuilding);
-        }
-        isPlacingBuilding = false;
-        currentBuilding = null;
-    }
+        RestoreOriginalMaterials();
 
-    public bool IsPlacingBuilding()
-    {
-        return isPlacingBuilding;
+        isPlacingBuilding = false;
+
+        originalMaterials.Clear();
+        currentMaterials.Clear();
+        renderers.Clear();
+
+        currentBuilding = null;
     }
 
     private void SetBuildingTransparency(Color color)
     {
-        if (buildingRenderer != null)
+        foreach (var renderer in renderers)
         {
-            buildingRenderer.material.color = color;
+            var materials = renderer.materials;
+            for (int i = 0; i < materials.Length; i++)
+            {
+                materials[i].color = color;
+            }
+            renderer.materials = materials;
+        }
+    }
+
+    private void RestoreOriginalMaterials()
+    {
+        int materialIndex = 0;
+        foreach (var renderer in renderers)
+        {
+            Material[] materials = renderer.materials;
+            for (int i = 0; i < materials.Length; i++)
+            {
+                materials[i].CopyPropertiesFromMaterial(originalMaterials[materialIndex]);
+                materialIndex++;
+            }
+            renderer.materials = materials;
         }
     }
 }
