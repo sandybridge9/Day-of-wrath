@@ -11,10 +11,10 @@ public static class LayerManager
 
     public static LayerMask WalkableLayers => LayerMask.GetMask(GlobalSettings.Layers.TerrainLayer);
 
-    public static LayerMask BlockingLayers => LayerMask.GetMask(
+    public static LayerMask BuildingBlockingLayers => LayerMask.GetMask(
         GlobalSettings.Layers.UnitLayer,
-        GlobalSettings.Layers.BuildingLayer,
-        GlobalSettings.Layers.TerrainLayer
+        GlobalSettings.Layers.BuildingLayer
+        //GlobalSettings.Layers.TerrainLayer
     );
 
     public static LayerMask UnitLayer => LayerMask.GetMask(GlobalSettings.Layers.UnitLayer);

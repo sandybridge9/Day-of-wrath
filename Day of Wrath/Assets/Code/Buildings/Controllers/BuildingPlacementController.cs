@@ -8,40 +8,43 @@ public class BuildingPlacementController : MonoBehaviour
     private LayerMask groundLayers;
     private LayerMask blockingLayers;
 
-    public float rotationSpeed = GlobalSettings.Buildings.RotationSpeed;
+    public float buildingRotationSpeed = GlobalSettings.Buildings.RotationSpeed;
 
-    private bool isPlacingBuilding = false;
-
-    private bool couldPlaceBuildingLastFrame = false;
+    public bool IsPlacingBuilding { get; private set; } = false;
     private bool canPlaceBuilding = false;
+    private bool couldPlaceBuildingLastFrame = false;
 
     public Color canBuildColor = new(0, 1, 0, 0.5f);
     public Color cannotBuildColor = new(1, 0, 0, 0.5f);
 
     private GameObject currentBuilding;
+    private List<Renderer> currentBuildingRenderers = new();
+    private List<Material> currentBuildingOriginalMaterials = new();
+    private List<Material> currentBuildingCurrentMaterials = new();
 
-    private List<Material> originalMaterials = new List<Material>();
-    private List<Material> currentMaterials = new List<Material>();
-    private List<Renderer> renderers = new List<Renderer>();
+    private Collider currentBuildingMainCollider;
+    private Collider currentBuildingPlacementCollider;
 
     private void Start()
     {
         groundLayers = LayerManager.GroundLayers;
-        blockingLayers = LayerManager.BlockingLayers;
+        blockingLayers = LayerManager.BuildingBlockingLayers;
     }
 
     private void Update()
     {
-        if (isPlacingBuilding)
+        if (IsPlacingBuilding)
         {
             UpdateBuildingPosition();
             CheckPlacementValidity();
-        }
-    }
 
-    public bool IsPlacingBuilding()
-    {
-        return isPlacingBuilding;
+            if(couldPlaceBuildingLastFrame != canPlaceBuilding)
+            {
+                SetBuildingTransparency(canPlaceBuilding ? canBuildColor : cannotBuildColor);
+            }
+
+            couldPlaceBuildingLastFrame = canPlaceBuilding;
+        }
     }
 
     public void StartBuildingPlacement()
@@ -51,107 +54,124 @@ public class BuildingPlacementController : MonoBehaviour
             CancelPlacement();
         }
 
-        currentBuilding = Instantiate(buildingPrefab);
-        renderers.AddRange(currentBuilding.GetComponents<Renderer>());
-        renderers.AddRange(currentBuilding.GetComponentsInChildren<Renderer>());
+        IsPlacingBuilding = true;
 
-        foreach (var renderer in renderers)
+        currentBuilding = Instantiate(buildingPrefab);
+
+        currentBuildingMainCollider = currentBuilding.GetComponent<Collider>();
+        currentBuildingPlacementCollider = currentBuilding.transform.Find("PlacementTrigger").GetComponent<Collider>();
+
+        currentBuildingRenderers.AddRange(currentBuilding.GetComponents<Renderer>());
+        currentBuildingRenderers.AddRange(currentBuilding.GetComponentsInChildren<Renderer>());
+
+        foreach (var renderer in currentBuildingRenderers)
         {
             foreach (var material in renderer.materials)
             {
-                originalMaterials.Add(new Material(material));
-                currentMaterials.Add(material);
+                currentBuildingOriginalMaterials.Add(new Material(material));
+                currentBuildingCurrentMaterials.Add(material);
             }
         }
 
-        isPlacingBuilding = true;
+        currentBuildingMainCollider.enabled = false;
+
         CheckPlacementValidity();
-    }
 
-    public void RotateBuilding(int direction)
-    {
-        if (currentBuilding != null)
-        {
-            currentBuilding.transform.Rotate(Vector3.up, direction * rotationSpeed * Time.deltaTime);
-        }
-    }
-
-    private void UpdateBuildingPosition()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, groundLayers))
-        {
-            float buildingHalfHeight = currentBuilding.GetComponent<Collider>().bounds.extents.y;
-            currentBuilding.transform.position = hit.point + new Vector3(0, buildingHalfHeight, 0);
-        }
-    }
-
-    public void CancelPlacement()
-    {
-        originalMaterials.Clear();
-        currentMaterials.Clear();
-        renderers.Clear();
-
-        if (currentBuilding != null)
-        {
-            Destroy(currentBuilding);
-        }
-
-        isPlacingBuilding = false;
-        currentBuilding = null;
-    }
-
-    private void CheckPlacementValidity()
-    {
-        Vector3 buildPosition = currentBuilding.transform.position;
-        Vector3 halfExtents = currentBuilding.GetComponent<Collider>().bounds.extents * 0.9f;
-
-        Collider buildingCollider = currentBuilding.GetComponent<Collider>();
-        buildingCollider.enabled = false;
-
-        Collider[] colliders = Physics.OverlapBox(buildPosition, halfExtents, Quaternion.identity, blockingLayers);
-        buildingCollider.enabled = true;
-
-        canPlaceBuilding = colliders.Length == 0;
-
-        if (couldPlaceBuildingLastFrame == canPlaceBuilding)
-        {
-            SetBuildingTransparency(canPlaceBuilding ? canBuildColor : cannotBuildColor);
-        }
-
-        couldPlaceBuildingLastFrame = canPlaceBuilding;
+        SetBuildingTransparency(canPlaceBuilding ? canBuildColor : cannotBuildColor);
     }
 
     public void PlaceBuilding()
     {
         if (!canPlaceBuilding)
         {
-            Debug.Log("Cannot place the building here. Position is invalid (red).");
             return;
         }
 
-        Debug.Log("Building placed successfully!");
-
         RestoreOriginalMaterials();
 
-        isPlacingBuilding = false;
+        currentBuildingMainCollider.enabled = true;
 
-        originalMaterials.Clear();
-        currentMaterials.Clear();
-        renderers.Clear();
+        ClearCurrentBuildingData();
 
+        ClearControllerData();
+    }
+
+    public void RotateBuilding(int direction)
+    {
+        if (currentBuilding != null)
+        {
+            currentBuilding.transform.Rotate(Vector3.up, direction * buildingRotationSpeed * Time.deltaTime);
+        }
+    }
+
+    public void CancelPlacement()
+    {
+        if (currentBuilding != null)
+        {
+            Destroy(currentBuilding);
+        }
+
+        ClearCurrentBuildingData();
+
+        ClearControllerData();
+    }
+
+    private void ClearCurrentBuildingData()
+    {
+        currentBuildingOriginalMaterials.Clear();
+        currentBuildingCurrentMaterials.Clear();
+        currentBuildingRenderers.Clear();
         currentBuilding = null;
+        currentBuildingMainCollider = null;
+        currentBuildingPlacementCollider = null;
+    }
+
+    private void ClearControllerData()
+    {
+        IsPlacingBuilding = false;
+        canPlaceBuilding = false;
+        couldPlaceBuildingLastFrame = false;
+    }
+
+    private void UpdateBuildingPosition()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, groundLayers))
+        {
+            currentBuilding.transform.position = hit.point;
+        }
+    }
+
+    private void CheckPlacementValidity()
+    {
+        var placementColliderCenter = currentBuildingPlacementCollider.bounds.center;
+        var placementColliderExtents = currentBuildingPlacementCollider.bounds.extents;
+        var placementColliderRotation = currentBuildingPlacementCollider.transform.rotation;
+
+        currentBuildingPlacementCollider.enabled = false;
+
+        canPlaceBuilding = Physics.OverlapBox(
+            placementColliderCenter,
+            placementColliderExtents,
+            placementColliderRotation,
+            blockingLayers)
+            .Length == 0;
+
+        currentBuildingPlacementCollider.enabled = true;
     }
 
     private void SetBuildingTransparency(Color color)
     {
-        foreach (var renderer in renderers)
+        foreach (var renderer in currentBuildingRenderers)
         {
             var materials = renderer.materials;
+
             for (int i = 0; i < materials.Length; i++)
             {
                 materials[i].color = color;
             }
+
             renderer.materials = materials;
         }
     }
@@ -159,14 +179,17 @@ public class BuildingPlacementController : MonoBehaviour
     private void RestoreOriginalMaterials()
     {
         int materialIndex = 0;
-        foreach (var renderer in renderers)
+
+        foreach (var renderer in currentBuildingRenderers)
         {
             Material[] materials = renderer.materials;
+
             for (int i = 0; i < materials.Length; i++)
             {
-                materials[i].CopyPropertiesFromMaterial(originalMaterials[materialIndex]);
+                materials[i].CopyPropertiesFromMaterial(currentBuildingOriginalMaterials[materialIndex]);
                 materialIndex++;
             }
+
             renderer.materials = materials;
         }
     }

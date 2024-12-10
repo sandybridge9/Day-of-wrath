@@ -42,7 +42,7 @@ public class KeyboardInputManager : MonoBehaviour
             buildingController.StartBuildingPlacement();
         }
 
-        if (buildingController.IsPlacingBuilding())
+        if (buildingController.IsPlacingBuilding)
         {
             if (Input.GetKey(KeyCode.Q))
             {
