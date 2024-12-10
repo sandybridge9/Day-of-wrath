@@ -310,9 +310,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29158b108cb92a44c8d31c5d8f7c91c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buildingPrefab: {fileID: 8298124493433871899, guid: a1d94db4091eb3b4c82dab2bae27aaec, type: 3}
-  rotationSpeed: 90
-  IsPlacingBuilding: 0
+  townHallPrefab: {fileID: 5633837793464145578, guid: 0b0324a6792a3fa469a36fbf5688b767, type: 3}
+  barracksPrefab: {fileID: 8298124493433871899, guid: a1d94db4091eb3b4c82dab2bae27aaec, type: 3}
+  buildingRotationSpeed: 90
   canBuildColor: {r: 0, g: 1, b: 0, a: 0.5}
   cannotBuildColor: {r: 1, g: 0, b: 0, a: 0.5}
 --- !u!114 &64823481

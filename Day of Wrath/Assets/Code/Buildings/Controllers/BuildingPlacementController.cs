@@ -3,7 +3,11 @@ using UnityEngine;
 
 public class BuildingPlacementController : MonoBehaviour
 {
-    public GameObject buildingPrefab;
+    [Header("Building Prefabs")]
+    public GameObject townHallPrefab;
+    public GameObject barracksPrefab;
+
+    private Dictionary<BuildingType, GameObject> buildingPrefabs;
 
     private LayerMask groundLayers;
     private LayerMask blockingLayers;
@@ -29,6 +33,12 @@ public class BuildingPlacementController : MonoBehaviour
     {
         groundLayers = LayerManager.GroundLayers;
         blockingLayers = LayerManager.BuildingBlockingLayers;
+
+        buildingPrefabs = new Dictionary<BuildingType, GameObject>
+        {
+            { BuildingType.TownHall, townHallPrefab },
+            { BuildingType.Barracks, barracksPrefab }
+        };
     }
 
     private void Update()
@@ -47,8 +57,14 @@ public class BuildingPlacementController : MonoBehaviour
         }
     }
 
-    public void StartBuildingPlacement()
+    public void StartBuildingPlacement(BuildingType buildingType)
     {
+        if (!buildingPrefabs.TryGetValue(buildingType, out GameObject buildingPrefab))
+        {
+            Debug.LogError($"No prefab assigned for building type: {buildingType}");
+            return;
+        }
+
         if (currentBuilding != null)
         {
             CancelPlacement();

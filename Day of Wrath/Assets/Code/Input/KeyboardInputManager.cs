@@ -39,7 +39,11 @@ public class KeyboardInputManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.B))
         {
-            buildingController.StartBuildingPlacement();
+            buildingController.StartBuildingPlacement(BuildingType.Barracks);
+        }
+        else if (Input.GetKeyDown(KeyCode.N))
+        {
+            buildingController.StartBuildingPlacement(BuildingType.TownHall);
         }
 
         if (buildingController.IsPlacingBuilding)
