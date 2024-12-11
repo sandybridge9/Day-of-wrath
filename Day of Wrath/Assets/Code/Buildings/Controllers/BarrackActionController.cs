@@ -1,68 +1,136 @@
+using System;
+
 using UnityEngine;
+
+using Random = UnityEngine.Random;
 
 public class BarrackActionController : MonoBehaviour
 {
-    public GameObject UnitPrefab;
+    [Header("Unit types")]
+    public GameObject WarriorPrefab;
 
-    public float SpawnRadius = 2f;
-    public int MaxSpawnAttempts = 10;
+    private BoxCollider warriorCollider;
+
+    public float SpawnRadius = 5f;
+    public int MaxSpawnAttempts = 100;
+    public float RaycastHeight = 10f;
 
     private BarrackBuilding selectedBarrack;
-    private LayerMask unitLayer;
+    private Bounds selectedBarrackBounds;
+
+    private LayerMask unitTrainingBlockingLayers;
+    private LayerMask groundLayers;
 
     private void Start()
     {
-        unitLayer = LayerManager.UnitLayer;
+        unitTrainingBlockingLayers = LayerManager.UnitTrainingBlockingLayers;
+        groundLayers = LayerManager.GroundLayers;
+
+        warriorCollider = WarriorPrefab.GetComponent<BoxCollider>();
     }
 
     public void SetSelectedBarrack(BarrackBuilding barrack)
     {
         selectedBarrack = barrack;
-        Debug.Log($"TroopTrainingController: Selected Barrack is {barrack.name}");
+
+        var placementTrigger = selectedBarrack.transform.Find("PlacementTrigger");
+        
+        if(placementTrigger != null && placementTrigger.TryGetComponent<Collider>(out var placementTriggerCollider))
+        {
+            selectedBarrackBounds = placementTriggerCollider.bounds;
+
+            return;
+        }
+
+        if(selectedBarrack.TryGetComponent<Collider>(out var mainCollider))
+        {
+            selectedBarrackBounds = mainCollider.bounds;
+
+            return;
+        }
+
+        throw new Exception("Could not find a collider on this BarrackBuilding neither on PlacementTrigger, nor on the Main GameObject.");
     }
 
     public void TrainUnit()
     {
         if (selectedBarrack == null)
         {
-            Debug.LogWarning("No Barrack selected for training.");
             return;
         }
 
-        SpawnUnit(UnitPrefab);
+        SpawnUnit(WarriorPrefab);
     }
 
     private void SpawnUnit(GameObject troopPrefab)
     {
-        Vector3 spawnPosition = FindEmptySpawnLocation(selectedBarrack.GetSpawnPoint());
+        var spawnPosition = FindEmptySpawnLocation(selectedBarrack.GetSpawnPoint());
+
         if (spawnPosition != Vector3.zero)
         {
+            spawnPosition = AdjustPositionToGround(spawnPosition, troopPrefab);
+
             Instantiate(troopPrefab, spawnPosition, Quaternion.identity);
-            Debug.Log($"Troop {troopPrefab.name} spawned at {spawnPosition}.");
-        }
-        else
-        {
-            Debug.LogWarning($"TroopTrainingController: No valid spawn location found near {selectedBarrack.name}.");
         }
     }
 
     private Vector3 FindEmptySpawnLocation(Vector3 spawnPoint)
     {
-        for (int attempt = 0; attempt < MaxSpawnAttempts; attempt++)
+        var potentialPositions = new Vector3[MaxSpawnAttempts];
+
+        for (int i = 0; i < MaxSpawnAttempts; i++)
         {
-            Vector3 randomOffset = new Vector3(
+            var randomOffset = new Vector3(
                 Random.Range(-SpawnRadius, SpawnRadius),
                 0,
                 Random.Range(-SpawnRadius, SpawnRadius));
 
-            Vector3 testPosition = spawnPoint + randomOffset;
+            potentialPositions[i] = spawnPoint + randomOffset;
+        }
 
-            if (!Physics.CheckSphere(testPosition, 0.5f, unitLayer))
+        Array.Sort(potentialPositions, (a, b) => Vector3.Distance(spawnPoint, a).CompareTo(Vector3.Distance(spawnPoint, b)));
+
+        foreach (Vector3 testPosition in potentialPositions)
+        {
+            if (!selectedBarrackBounds.Contains(testPosition) && IsPositionValid(testPosition))
             {
-                return testPosition; // Valid position
+                return testPosition;
             }
         }
 
-        return Vector3.zero; // No valid position
+        return Vector3.zero;
+    }
+
+    private bool IsPositionValid(Vector3 position)
+    {
+        var ray = new Ray(position + Vector3.up * RaycastHeight, Vector3.down);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, RaycastHeight * 2, unitTrainingBlockingLayers))
+        {
+            return false;
+        }
+
+        if (Physics.CheckSphere(position, 0.5f, unitTrainingBlockingLayers))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private Vector3 AdjustPositionToGround(Vector3 position, GameObject prefab)
+    {
+        var ray = new Ray(position + Vector3.up * RaycastHeight, Vector3.down);
+
+        if (Physics.Raycast(ray, out var raycastHit, RaycastHeight * 2, groundLayers))
+        {
+            var unitHalfHeight = warriorCollider.size.y / 2;
+
+            position.y = raycastHit.point.y + unitHalfHeight;
+
+            return position;
+        }
+
+        return position;
     }
 }

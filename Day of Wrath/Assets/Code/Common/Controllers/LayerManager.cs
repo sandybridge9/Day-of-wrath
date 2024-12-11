@@ -11,11 +11,19 @@ public static class LayerManager
 
     public static LayerMask WalkableLayers => LayerMask.GetMask(GlobalSettings.Layers.TerrainLayer);
 
+    public static LayerMask UnitLayer => LayerMask.GetMask(GlobalSettings.Layers.UnitLayer);
+
+    public static LayerMask BuildingLayer = LayerMask.GetMask(GlobalSettings.Layers.BuildingLayer);
+
     public static LayerMask BuildingBlockingLayers => LayerMask.GetMask(
         GlobalSettings.Layers.UnitLayer,
         GlobalSettings.Layers.BuildingLayer
         //GlobalSettings.Layers.TerrainLayer
     );
 
-    public static LayerMask UnitLayer => LayerMask.GetMask(GlobalSettings.Layers.UnitLayer);
+    public static LayerMask UnitTrainingBlockingLayers => LayerMask.GetMask(
+        GlobalSettings.Layers.UnitLayer,
+        GlobalSettings.Layers.BuildingLayer
+    );
+
 }

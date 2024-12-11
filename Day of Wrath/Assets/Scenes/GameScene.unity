@@ -353,9 +353,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf5e209c595126244a7b2ce1cf3da840, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UnitPrefab: {fileID: 76793062159365010, guid: 4439052a5a207bc4a99052d348d2cb15, type: 3}
-  SpawnRadius: 2
-  MaxSpawnAttempts: 10
+  WarriorPrefab: {fileID: 7178659268648800679, guid: 0af5c0b968a2efd44b336e9162e41885, type: 3}
+  SpawnRadius: 5
+  MaxSpawnAttempts: 100
+  RaycastHeight: 10
 --- !u!114 &64823484
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2542,7 +2543,7 @@ Transform:
   m_GameObject: {fileID: 812216603}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.02, y: 0, z: 0.01}
   m_LocalScale: {x: 10, y: 5, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
