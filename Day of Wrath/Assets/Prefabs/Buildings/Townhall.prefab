@@ -170,6 +170,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SelectionIndicatorPrefab: {fileID: 8101361003961117983, guid: 202d225e6e4dc6f40ba159e70b16e133, type: 3}
+  GroundOffset: 0.05
+  ScaleMultiplier: 1.5
 --- !u!1001 &8246846321572454297
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -16,6 +16,8 @@ public class BuildingPlacementController : MonoBehaviour
     //public GameObject largeTowerPrefab;
     //public GameObject gatehousePrefab;
 
+    public string PlacementTriggerGameObjectName = "PlacementTrigger";
+
     private Dictionary<BuildingType, GameObject> buildingPrefabs;
 
     private LayerMask groundLayers;
@@ -93,7 +95,7 @@ public class BuildingPlacementController : MonoBehaviour
         currentBuilding = Instantiate(buildingPrefab);
 
         currentBuildingMainCollider = currentBuilding.GetComponent<Collider>();
-        currentBuildingPlacementCollider = currentBuilding.transform.Find("PlacementTrigger").GetComponent<Collider>();
+        currentBuildingPlacementCollider = currentBuilding.transform.Find(PlacementTriggerGameObjectName).GetComponent<Collider>();
 
         currentBuildingRenderers.AddRange(currentBuilding.GetComponents<Renderer>());
         currentBuildingRenderers.AddRange(currentBuilding.GetComponentsInChildren<Renderer>());

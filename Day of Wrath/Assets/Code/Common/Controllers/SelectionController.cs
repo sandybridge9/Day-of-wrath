@@ -26,19 +26,47 @@ public class SelectionController : MonoBehaviour
         var mousePosition = Input.mousePosition;
         var ray = Camera.main.ScreenPointToRay(mousePosition);
 
-        if (!Physics.Raycast(ray, out var hit, Mathf.Infinity, LayerManager.SelectableLayers))
+        if (!Physics.Raycast(ray, out var raycastHit, Mathf.Infinity, LayerManager.SelectableLayers))
         {
             ClearSelection();
             return;
         }
 
-        var selectableObject = hit.collider.GetComponent<SelectableObject>();
+        HandleRaycastHit(raycastHit);
+    }
 
-        if (selectableObject == null)
+    private void HandleRaycastHit(RaycastHit raycastHit)
+    {
+        var selectableObject = raycastHit.collider.GetComponent<SelectableObject>();
+
+        if (selectableObject != null)
         {
+            HandleSelectableObject(selectableObject);
+
             return;
         }
 
+        selectableObject = raycastHit.collider.GetComponentInParent<SelectableObject>();
+
+        if (selectableObject != null)
+        {
+            HandleSelectableObject(selectableObject);
+
+            return;
+        }
+
+        selectableObject = raycastHit.collider.GetComponentInChildren<SelectableObject>();
+
+        if (selectableObject != null)
+        {
+            HandleSelectableObject(selectableObject);
+
+            return;
+        }
+    }
+
+    private void HandleSelectableObject(SelectableObject selectableObject)
+    {
         if (selectableObject.Type == SelectableObjectType.Building)
         {
             SelectBuilding(selectableObject as BuildingBase);

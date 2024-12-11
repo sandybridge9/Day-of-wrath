@@ -1,12 +1,14 @@
+using System;
 using UnityEngine;
 
 public class SelectionIndicator : MonoBehaviour
 {
-    public GameObject SelectionIndicatorPrefab; // Assign the prefab in the Inspector
+    public GameObject SelectionIndicatorPrefab;
+
+    public float GroundOffset = 0.05f;
+    public float ScaleMultiplier = 1.5f;
 
     private GameObject selectionIndicatorInstance;
-
-    private float groundOffset = 0.05f;
 
     public void Show()
     {
@@ -43,19 +45,44 @@ public class SelectionIndicator : MonoBehaviour
             yPosition = collider.bounds.min.y;
         }
 
-        yPosition += groundOffset;
+        yPosition += GroundOffset;
         return new Vector3(transform.position.x, yPosition, transform.position.z);
     }
 
     private Vector3 GetIndicatorScale()
     {
-        // Scale the circle based on the object's collider size
-        float scale = 1.5f; // Default scale multiplier
-        Collider collider = GetComponent<Collider>();
+        var collider = GetRelevantCollider();
+
         if (collider != null)
         {
-            scale = Mathf.Max(collider.bounds.size.x, collider.bounds.size.z) * 2f;
+            return GetColliderScaleVector(collider);
         }
+
+        throw new Exception($"Couldn't find a collider on this GameObject {transform}");
+    }
+
+    private Collider GetRelevantCollider()
+    {
+        var placementTrigger = transform.Find("PlacementTrigger");
+
+        if (placementTrigger != null && placementTrigger.TryGetComponent<Collider>(out var placementTriggerCollider))
+        {
+            return placementTriggerCollider;
+        }
+
+        if (TryGetComponent<Collider>(out var mainCollider))
+        {
+            return mainCollider;
+        }
+
+        return null;
+    }
+
+    private Vector3 GetColliderScaleVector(Collider collider)
+    {
+        var maxSize = Mathf.Max(collider.bounds.size.x, collider.bounds.size.z);
+        var scale = maxSize * ScaleMultiplier;
+
         return new Vector3(scale, scale, scale);
     }
 }

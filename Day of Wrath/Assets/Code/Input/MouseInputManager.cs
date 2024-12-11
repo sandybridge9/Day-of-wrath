@@ -35,7 +35,7 @@ public class MouseInputManager : MonoBehaviour
     {
         if (Input.GetMouseButtonUp(0))
         {
-            if (buildingController != null && buildingController.IsPlacingBuilding)
+            if (buildingController.IsPlacingBuilding)
             {
                 buildingController.PlaceBuilding();
             }

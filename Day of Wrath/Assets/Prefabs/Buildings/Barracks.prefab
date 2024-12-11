@@ -184,8 +184,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6595288957431386737}
   - component: {fileID: 4557103680267697309}
-  - component: {fileID: 8141416706152909231}
   - component: {fileID: 4463183164611011975}
+  - component: {fileID: 8141416706152909231}
   m_Layer: 7
   m_Name: Barracks
   m_TagString: Untagged
@@ -233,19 +233,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
---- !u!114 &8141416706152909231
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8298124493433871899}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b57674e495e690547bc560526c4342ae, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SelectionIndicatorPrefab: {fileID: 8101361003961117983, guid: 202d225e6e4dc6f40ba159e70b16e133, type: 3}
 --- !u!114 &4463183164611011975
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -260,3 +247,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Health: 1
   SpawnPoint: {fileID: 82927767726101451}
+--- !u!114 &8141416706152909231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8298124493433871899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b57674e495e690547bc560526c4342ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SelectionIndicatorPrefab: {fileID: 8101361003961117983, guid: 202d225e6e4dc6f40ba159e70b16e133, type: 3}
+  GroundOffset: 0.05
+  ScaleMultiplier: 1.5
