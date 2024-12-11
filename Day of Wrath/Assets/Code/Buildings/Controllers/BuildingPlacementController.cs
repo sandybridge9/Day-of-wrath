@@ -6,6 +6,15 @@ public class BuildingPlacementController : MonoBehaviour
     [Header("Building Prefabs")]
     public GameObject townHallPrefab;
     public GameObject barracksPrefab;
+    public GameObject warehousePrefab;
+    //public GameObject marketPrefab;
+    //public GameObject farmPrefab;
+    //public GameObject minePrefab;
+    //public GameObject woodcutterPrefab;
+    //public GameObject smallTower;
+    //public GameObject mediumTower;
+    //public GameObject largeTowerPrefab;
+    //public GameObject gatehousePrefab;
 
     private Dictionary<BuildingType, GameObject> buildingPrefabs;
 
@@ -37,7 +46,16 @@ public class BuildingPlacementController : MonoBehaviour
         buildingPrefabs = new Dictionary<BuildingType, GameObject>
         {
             { BuildingType.TownHall, townHallPrefab },
-            { BuildingType.Barracks, barracksPrefab }
+            { BuildingType.Barracks, barracksPrefab },
+            { BuildingType.Warehouse, warehousePrefab },
+            //{ BuildingType.Market, marketPrefab },
+            //{ BuildingType.Farm, farmPrefab },
+            //{ BuildingType.Mine, minePrefab },
+            //{ BuildingType.Woodcutter, woodcutterPrefab },
+            //{ BuildingType.SmallTower, smallTower },
+            //{ BuildingType.MediumTower, mediumTower },
+            //{ BuildingType.LargeTower, largeTowerPrefab },
+            //{ BuildingType.Gatehouse, gatehousePrefab }
         };
     }
 

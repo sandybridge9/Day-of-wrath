@@ -1,5 +1,14 @@
 public enum BuildingType
 {
     TownHall,
-    Barracks
+    Barracks,
+    Warehouse,
+    Market,
+    Farm,
+    Mine,
+    Woodcutter,
+    SmallTower,
+    MediumTower,
+    LargeTower,
+    Gatehouse
 }

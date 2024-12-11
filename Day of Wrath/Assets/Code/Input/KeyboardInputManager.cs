@@ -45,6 +45,10 @@ public class KeyboardInputManager : MonoBehaviour
         {
             buildingController.StartBuildingPlacement(BuildingType.TownHall);
         }
+        else if (Input.GetKeyDown(KeyCode.M))
+        {
+            buildingController.StartBuildingPlacement(BuildingType.Warehouse);
+        }
 
         if (buildingController.IsPlacingBuilding)
         {
