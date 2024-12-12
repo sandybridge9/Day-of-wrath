@@ -246,6 +246,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Health: 1
+  Costs:
+  - resourceType: 0
+    amount: 50
+  - resourceType: 1
+    amount: 50
+  - resourceType: 2
+    amount: 50
   SpawnPoint: {fileID: 82927767726101451}
 --- !u!114 &8141416706152909231
 MonoBehaviour:

@@ -10,6 +10,9 @@ public class UnitBase : SelectableObject
 
     public override SelectableObjectType Type { get; } = SelectableObjectType.Unit;
 
+    [Header("Cost")]
+    public Cost[] Costs;
+
     protected override void Update()
     {
         base.Update();

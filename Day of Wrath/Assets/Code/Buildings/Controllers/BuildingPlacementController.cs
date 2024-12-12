@@ -16,14 +16,14 @@ public class BuildingPlacementController : MonoBehaviour
     //public GameObject largeTowerPrefab;
     //public GameObject gatehousePrefab;
 
-    public string PlacementTriggerGameObjectName = "PlacementTrigger";
-
     private Dictionary<BuildingType, GameObject> buildingPrefabs;
 
     private LayerMask groundLayers;
     private LayerMask blockingLayers;
 
     public float buildingRotationSpeed = GlobalSettings.Buildings.RotationSpeed;
+
+    public string PlacementTriggerGameObjectName = "PlacementTrigger";
 
     public bool IsPlacingBuilding { get; private set; } = false;
     private bool canPlaceBuilding = false;
@@ -40,8 +40,12 @@ public class BuildingPlacementController : MonoBehaviour
     private Collider currentBuildingMainCollider;
     private Collider currentBuildingPlacementCollider;
 
+    private ResourceController resourceController;
+
     private void Start()
     {
+        resourceController = GetComponent<ResourceController>();
+
         groundLayers = LayerManager.GroundLayers;
         blockingLayers = LayerManager.BuildingBlockingLayers;
 
@@ -85,6 +89,15 @@ public class BuildingPlacementController : MonoBehaviour
             return;
         }
 
+        if (!resourceController.CanAfford(buildingPrefab.GetComponent<BuildingBase>().Costs))
+        {
+            Debug.Log("Can't afford this building.");
+
+            return;
+        }
+
+        Debug.Log("Can afford this building.");
+
         if (currentBuilding != null)
         {
             CancelPlacement();
@@ -121,6 +134,11 @@ public class BuildingPlacementController : MonoBehaviour
         if (!canPlaceBuilding)
         {
             return;
+        }
+
+        if (!resourceController.SpendResources(currentBuilding.GetComponent<BuildingBase>().Costs))
+        {
+            CancelPlacement();
         }
 
         RestoreOriginalMaterials();

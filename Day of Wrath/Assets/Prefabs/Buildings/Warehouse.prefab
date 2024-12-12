@@ -71,6 +71,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Health: 200
+  Costs:
+  - resourceType: 1
+    amount: 100
 --- !u!114 &3900218831680809811
 MonoBehaviour:
   m_ObjectHideFlags: 0
