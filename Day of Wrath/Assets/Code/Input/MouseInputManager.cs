@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class MouseInputManager : MonoBehaviour
 {
@@ -33,6 +34,11 @@ public class MouseInputManager : MonoBehaviour
 
     private void HandleLeftClick()
     {
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+
         if (Input.GetMouseButtonUp(0))
         {
             if (buildingController.IsPlacingBuilding)
@@ -50,6 +56,11 @@ public class MouseInputManager : MonoBehaviour
 
     private void HandleRightClick()
     {
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+
         if (Input.GetMouseButtonDown(1))
         {
             rightClickStartPos = Input.mousePosition;

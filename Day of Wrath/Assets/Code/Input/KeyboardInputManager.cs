@@ -37,28 +37,6 @@ public class KeyboardInputManager : MonoBehaviour
 
     private void HandleBuildingInputs()
     {
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            buildingController.StartBuildingPlacement(BuildingType.Barracks);
-        }
-        else if (Input.GetKeyDown(KeyCode.N))
-        {
-            buildingController.StartBuildingPlacement(BuildingType.TownHall);
-        }
-        else if (Input.GetKeyDown(KeyCode.M))
-        {
-            buildingController.StartBuildingPlacement(BuildingType.Warehouse);
-        }
-        else if (Input.GetKeyDown(KeyCode.L))
-        {
-            buildingController.StartBuildingPlacement(BuildingType.Market);
-        }
-        else if (Input.GetKeyDown(KeyCode.K))
-        {
-            buildingController.StartBuildingPlacement(BuildingType.Farm);
-        }
-
-
         if (buildingController.IsPlacingBuilding)
         {
             if (Input.GetKey(KeyCode.Q))
