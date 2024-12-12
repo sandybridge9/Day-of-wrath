@@ -7,8 +7,8 @@ public class BuildingPlacementController : MonoBehaviour
     public GameObject townHallPrefab;
     public GameObject barracksPrefab;
     public GameObject warehousePrefab;
-    //public GameObject marketPrefab;
-    //public GameObject farmPrefab;
+    public GameObject marketPrefab;
+    public GameObject farmPrefab;
     //public GameObject minePrefab;
     //public GameObject woodcutterPrefab;
     //public GameObject smallTower;
@@ -50,8 +50,8 @@ public class BuildingPlacementController : MonoBehaviour
             { BuildingType.TownHall, townHallPrefab },
             { BuildingType.Barracks, barracksPrefab },
             { BuildingType.Warehouse, warehousePrefab },
-            //{ BuildingType.Market, marketPrefab },
-            //{ BuildingType.Farm, farmPrefab },
+            { BuildingType.Market, marketPrefab },
+            { BuildingType.Farm, farmPrefab },
             //{ BuildingType.Mine, minePrefab },
             //{ BuildingType.Woodcutter, woodcutterPrefab },
             //{ BuildingType.SmallTower, smallTower },
