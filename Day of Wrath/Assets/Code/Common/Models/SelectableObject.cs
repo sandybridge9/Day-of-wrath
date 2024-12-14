@@ -9,7 +9,7 @@ public class SelectableObject : MonoBehaviour
 
     private SelectionIndicator selectionIndicator;
 
-    private void Start()
+    protected virtual void Start()
     {
         selectionIndicator = GetComponent<SelectionIndicator>();
     }

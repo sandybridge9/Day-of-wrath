@@ -8,4 +8,19 @@ public class BuildingBase : SelectableObject
 
     [Header("Cost")]
     public Cost[] Costs;
+
+    protected override void Start()
+    {
+        base.Start();
+    }
+
+    public virtual void OnBuildingPlaced()
+    {
+
+    }
+
+    public virtual void OnBuildingDestroyed()
+    {
+
+    }
 }

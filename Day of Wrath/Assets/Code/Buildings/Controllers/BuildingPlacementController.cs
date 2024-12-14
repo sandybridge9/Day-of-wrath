@@ -9,13 +9,13 @@ public class BuildingPlacementController : MonoBehaviour
     public GameObject warehousePrefab;
     public GameObject marketPrefab;
     public GameObject farmPrefab;
-    //public GameObject minePrefab;
-    //public GameObject woodcutterPrefab;
+    public GameObject minePrefab;
+    public GameObject woodcutterPrefab;
     //public GameObject smallTower;
     //public GameObject mediumTower;
     //public GameObject largeTowerPrefab;
     //public GameObject gatehousePrefab;
-
+     
     private Dictionary<BuildingType, GameObject> buildingPrefabs;
 
     private LayerMask groundLayers;
@@ -56,8 +56,8 @@ public class BuildingPlacementController : MonoBehaviour
             { BuildingType.Warehouse, warehousePrefab },
             { BuildingType.Market, marketPrefab },
             { BuildingType.Farm, farmPrefab },
-            //{ BuildingType.Mine, minePrefab },
-            //{ BuildingType.Woodcutter, woodcutterPrefab },
+            { BuildingType.Mine, minePrefab },
+            { BuildingType.Woodcutter, woodcutterPrefab },
             //{ BuildingType.SmallTower, smallTower },
             //{ BuildingType.MediumTower, mediumTower },
             //{ BuildingType.LargeTower, largeTowerPrefab },
@@ -136,7 +136,9 @@ public class BuildingPlacementController : MonoBehaviour
             return;
         }
 
-        if (!resourceController.SpendResources(currentBuilding.GetComponent<BuildingBase>().Costs))
+        var building = currentBuilding.GetComponent<BuildingBase>();
+
+        if (!resourceController.SpendResources(building.Costs))
         {
             CancelPlacement();
         }
@@ -144,6 +146,8 @@ public class BuildingPlacementController : MonoBehaviour
         RestoreOriginalMaterials();
 
         currentBuildingMainCollider.enabled = true;
+
+        building.OnBuildingPlaced();
 
         ClearCurrentBuildingData();
 
