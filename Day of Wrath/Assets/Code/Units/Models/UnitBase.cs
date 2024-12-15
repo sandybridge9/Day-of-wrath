@@ -16,8 +16,6 @@ public class UnitBase : SelectableObject
     protected override void Update()
     {
         base.Update();
-
-        Move();
     }
 
     public virtual void BeginMoving(Vector3 newDestination)
@@ -29,19 +27,6 @@ public class UnitBase : SelectableObject
 
             return;
         }
-    }
-
-    public virtual void Move()
-    {
-        if(!IsMoving || transform.position == destination)
-        {
-            IsMoving = false;
-            destination = transform.position;
-
-            return;
-        }
-
-        transform.position = Vector3.MoveTowards(transform.position, destination, MovementSpeed * Time.deltaTime);
     }
 
     public virtual void CancelMovement()

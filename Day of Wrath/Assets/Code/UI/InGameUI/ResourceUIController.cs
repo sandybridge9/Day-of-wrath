@@ -13,10 +13,10 @@ public class ResourceUIController : MonoBehaviour
 
     private void Update()
     {
-        goldText.text = $"Gold: {resourceManager.GetResourceAmount(ResourceType.Gold)}";
-        woodText.text = $"Wood: {resourceManager.GetResourceAmount(ResourceType.Wood)}";
-        stoneText.text = $"Stone: {resourceManager.GetResourceAmount(ResourceType.Stone)}";
-        ironText.text = $"Iron: {resourceManager.GetResourceAmount(ResourceType.Iron)}";
-        foodText.text = $"Food: {resourceManager.GetResourceAmount(ResourceType.Food)}";
+        goldText.text = $"Gold: {resourceManager.GetResourceAmount(ResourceType.Gold)}/{resourceManager.GetCapacity(ResourceType.Gold)}";
+        woodText.text = $"Wood: {resourceManager.GetResourceAmount(ResourceType.Wood)}/{resourceManager.GetCapacity(ResourceType.Wood)}";
+        stoneText.text = $"Stone: {resourceManager.GetResourceAmount(ResourceType.Stone)}/{resourceManager.GetCapacity(ResourceType.Stone)}";
+        ironText.text = $"Iron: {resourceManager.GetResourceAmount(ResourceType.Iron)}/{resourceManager.GetCapacity(ResourceType.Iron)}";
+        foodText.text = $"Food: {resourceManager.GetResourceAmount(ResourceType.Food)}/{resourceManager.GetCapacity(ResourceType.Food)}";
     }
 }

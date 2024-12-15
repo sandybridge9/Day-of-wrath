@@ -66,6 +66,7 @@ GameObject:
   - component: {fileID: 6739430601530105600}
   - component: {fileID: 8311305354810195853}
   - component: {fileID: 4215638000760769890}
+  - component: {fileID: -7558185211814934297}
   m_Layer: 7
   m_Name: Woodcutter
   m_TagString: Untagged
@@ -159,6 +160,21 @@ MonoBehaviour:
   SelectionIndicatorPrefab: {fileID: 8101361003961117983, guid: 202d225e6e4dc6f40ba159e70b16e133, type: 3}
   GroundOffset: 0.05
   ScaleMultiplier: 1.5
+--- !u!114 &-7558185211814934297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 806700724374632285}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4363baaafea44584abe84e6063911aae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  capacityBoosts:
+  - resourceType: 1
+    amount: 500
 --- !u!1001 &3162040059043810289
 PrefabInstance:
   m_ObjectHideFlags: 0

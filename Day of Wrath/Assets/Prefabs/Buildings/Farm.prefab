@@ -66,6 +66,7 @@ GameObject:
   - component: {fileID: -3667203417155046179}
   - component: {fileID: -8886801278183136305}
   - component: {fileID: 5263886066949726706}
+  - component: {fileID: -2945348418988046048}
   m_Layer: 7
   m_Name: Farm
   m_TagString: Untagged
@@ -161,6 +162,21 @@ MonoBehaviour:
   SelectionIndicatorPrefab: {fileID: 8101361003961117983, guid: 202d225e6e4dc6f40ba159e70b16e133, type: 3}
   GroundOffset: 0.05
   ScaleMultiplier: 1.5
+--- !u!114 &-2945348418988046048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8856049331516156297}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4363baaafea44584abe84e6063911aae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  capacityBoosts:
+  - resourceType: 4
+    amount: 500
 --- !u!1001 &497449931822614709
 PrefabInstance:
   m_ObjectHideFlags: 0

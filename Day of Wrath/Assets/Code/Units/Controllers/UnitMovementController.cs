@@ -13,6 +13,7 @@ public class UnitMovementController : MonoBehaviour
         unitBase = GetComponent<UnitBase>();
 
         Collider unitCollider = GetComponent<Collider>();
+
         if (unitCollider != null)
         {
             heightOffset = unitCollider.bounds.extents.y;
@@ -36,6 +37,7 @@ public class UnitMovementController : MonoBehaviour
     private void MoveToTarget()
     {
         float movementSpeed = unitBase.MovementSpeed;
+
         transform.position = Vector3.MoveTowards(transform.position, targetPosition, movementSpeed * Time.deltaTime);
 
         if (Vector3.Distance(transform.position, targetPosition) < 0.1f)

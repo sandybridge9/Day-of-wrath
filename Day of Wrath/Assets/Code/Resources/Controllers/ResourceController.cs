@@ -10,32 +10,61 @@ public class ResourceController : MonoBehaviour
     public int startingIron = 200;
     public int startingFood = 100;
 
+    [Header("Initial Capacities")]
+    public int startingGoldCapacity = 2000;
+    public int startingWoodCapacity = 1000;
+    public int startingStoneCapacity = 1000;
+    public int startingIronCapacity = 500;
+    public int startingFoodCapacity = 500;
+
     private Dictionary<ResourceType, int> resources = new Dictionary<ResourceType, int>();
+    private Dictionary<ResourceType, int> capacities = new Dictionary<ResourceType, int>();
 
     private void Start()
     {
+        // Initialize resources
         resources[ResourceType.Gold] = startingGold;
         resources[ResourceType.Wood] = startingWood;
         resources[ResourceType.Stone] = startingStone;
         resources[ResourceType.Iron] = startingIron;
         resources[ResourceType.Food] = startingFood;
+
+        // Initialize capacities
+        capacities[ResourceType.Gold] = startingGoldCapacity;
+        capacities[ResourceType.Wood] = startingWoodCapacity;
+        capacities[ResourceType.Stone] = startingStoneCapacity;
+        capacities[ResourceType.Iron] = startingIronCapacity;
+        capacities[ResourceType.Food] = startingFoodCapacity;
     }
 
-    public bool CanAfford(Cost[] costs)
+    public void IncreaseCapacity(ResourceType type, int amount)
     {
-        foreach (var cost in costs)
+        if (capacities.ContainsKey(type))
         {
-            if (!resources.ContainsKey(cost.resourceType) || resources[cost.resourceType] < cost.amount)
-            {
-                Debug.LogWarning($"Not enough {cost.resourceType}. Required: {cost.amount}, Available: {resources[cost.resourceType]}");
-
-                return false;
-            }
-
-            Debug.LogWarning($"Enough {cost.resourceType}. Required: {cost.amount}, Available: {resources[cost.resourceType]}");
+            capacities[type] += amount;
+            Debug.Log($"{type} capacity increased by {amount}. New capacity: {capacities[type]}");
         }
+    }
 
-        return true;
+    public void DecreaseCapacity(ResourceType type, int amount)
+    {
+        if (capacities.ContainsKey(type))
+        {
+            capacities[type] -= amount;
+            Debug.Log($"{type} capacity decreased by {amount}. New capacity: {capacities[type]}");
+        }
+    }
+
+    public void AddResource(ResourceType type, int amount)
+    {
+        if (resources.ContainsKey(type))
+        {
+            int newAmount = Mathf.Min(resources[type] + amount, capacities[type]);
+            int actualAdded = newAmount - resources[type];
+            resources[type] = newAmount;
+
+            Debug.Log($"{actualAdded} {type} added. New total: {resources[type]} / {capacities[type]}");
+        }
     }
 
     public bool SpendResources(Cost[] costs)
@@ -55,17 +84,30 @@ public class ResourceController : MonoBehaviour
         return true;
     }
 
-    public void AddResource(ResourceType type, int amount)
+    public bool CanAfford(Cost[] costs)
     {
-        if (resources.ContainsKey(type))
+        foreach (var cost in costs)
         {
-            resources[type] += amount;
-            Debug.Log($"{amount} {type} added. New total: {resources[type]}");
+            if (!resources.ContainsKey(cost.resourceType) || resources[cost.resourceType] < cost.amount)
+            {
+                Debug.LogWarning($"Not enough {cost.resourceType}. Required: {cost.amount}, Available: {resources[cost.resourceType]}");
+
+                return false;
+            }
+
+            Debug.LogWarning($"Enough {cost.resourceType}. Required: {cost.amount}, Available: {resources[cost.resourceType]}");
         }
+
+        return true;
     }
 
     public int GetResourceAmount(ResourceType type)
     {
         return resources.ContainsKey(type) ? resources[type] : 0;
+    }
+
+    public int GetCapacity(ResourceType type)
+    {
+        return capacities.ContainsKey(type) ? capacities[type] : 0;
     }
 }

@@ -1,9 +1,9 @@
 using System;
 
 [Serializable]
-public class ResourceProduction
+public class CapacityBoost
 {
     public ResourceType resourceType;
 
-    public int productionAmount = 10;
+    public int amount;
 }
