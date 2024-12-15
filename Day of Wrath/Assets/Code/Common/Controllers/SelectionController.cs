@@ -21,6 +21,23 @@ public class SelectionController : MonoBehaviour
     [HideInInspector]
     public bool IsMultiSelectEnabled { get; set; }
 
+    public RectTransform SelectionBox;
+
+    public bool IsBoxSelecting = false;
+    private Vector2 boxStartPosition;
+
+    private LayerMask unitLayerMask;
+
+    private void Start()
+    {
+        if (SelectionBox != null)
+        {
+            SelectionBox.gameObject.SetActive(false);
+        }
+
+        unitLayerMask = LayerManager.UnitLayer;
+    }
+
     public void PointSelect()
     {
         var mousePosition = Input.mousePosition;
@@ -106,6 +123,125 @@ public class SelectionController : MonoBehaviour
             }
         }
     }
+
+    public void StartBoxSelection(Vector2 startPosition)
+    {
+        IsBoxSelecting = true;
+        boxStartPosition = startPosition;
+        SelectionBox.gameObject.SetActive(true);
+
+        UpdateBoxSelection(startPosition);
+    }
+
+    public void UpdateBoxSelection(Vector2 currentMousePosition)
+    {
+        var width = currentMousePosition.x - boxStartPosition.x;
+        var height = currentMousePosition.y - boxStartPosition.y;
+
+        SelectionBox.sizeDelta = new Vector2(Mathf.Abs(width), Mathf.Abs(height));
+        SelectionBox.anchoredPosition = boxStartPosition + new Vector2(width / 2, height / 2);
+    }
+
+    public void FinishBoxSelection()
+    {
+        IsBoxSelecting = false;
+        SelectionBox.gameObject.SetActive(false);
+
+        SelectUnitsInBox();
+    }
+
+    private void SelectUnitsInBox()
+    {
+        // Get the corners of the selection box in screen space
+        Rect selectionRect = GetSelectionRect();
+
+        // Clear the current selection
+        ClearSelection();
+
+        // Find all units in the scene
+        UnitBase[] allUnits = FindObjectsOfType<UnitBase>();
+
+        foreach (UnitBase unit in allUnits)
+        {
+            Vector3 unitScreenPos = Camera.main.WorldToScreenPoint(unit.transform.position);
+
+            if (selectionRect.Contains(unitScreenPos, true))
+            {
+                unit.IsSelected = true;
+                SelectedUnits.Add(unit);
+                Debug.Log($"Unit selected: {unit.name}");
+            }
+        }
+    }
+
+    private Rect GetSelectionRect()
+    {
+        Vector2 start = boxStartPosition;
+        Vector2 end = Input.mousePosition;
+
+        float xMin = Mathf.Min(start.x, end.x);
+        float yMin = Mathf.Min(start.y, end.y);
+        float width = Mathf.Abs(end.x - start.x);
+        float height = Mathf.Abs(end.y - start.y);
+
+        return new Rect(xMin, yMin, width, height);
+    }
+
+    //private void SelectUnitsInBox()
+    //{
+    //    Vector3[] corners = GetScreenSpaceCorners();
+
+    //    // Raycast to get the world-space points on the ground plane
+    //    Vector3 bottomLeft = ScreenToGroundPoint(corners[0]);
+    //    Vector3 topRight = ScreenToGroundPoint(corners[2]);
+
+    //    // Calculate the center and size for the box collider
+    //    Vector3 center = (bottomLeft + topRight) / 2f;
+    //    Vector3 size = new Vector3(Mathf.Abs(topRight.x - bottomLeft.x), 10f, Mathf.Abs(topRight.z - bottomLeft.z));
+
+    //    // Perform OverlapBox to detect units within the selection box
+    //    Collider[] hits = Physics.OverlapBox(center, size / 2f, Quaternion.identity, unitLayerMask);
+
+    //    ClearSelection();
+
+    //    foreach (var hit in hits)
+    //    {
+    //        UnitBase unit = hit.GetComponent<UnitBase>();
+    //        if (unit != null)
+    //        {
+    //            unit.IsSelected = true;
+    //            SelectedUnits.Add(unit);
+    //            Debug.Log($"Unit selected: {unit.name}");
+    //        }
+    //    }
+    //}
+
+    //private Vector3 ScreenToGroundPoint(Vector3 screenPoint)
+    //{
+    //    Ray ray = Camera.main.ScreenPointToRay(screenPoint);
+    //    if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, LayerManager.GroundLayers))
+    //    {
+    //        return hit.point;
+    //    }
+
+    //    // Fallback to return a default point if raycast fails
+    //    return Vector3.zero;
+    //}
+
+    //private Vector3[] GetScreenSpaceCorners()
+    //{
+    //    Vector3[] corners = new Vector3[4];
+    //    SelectionBox.GetWorldCorners(corners);
+
+    //    // Convert world-space corners to screen-space points
+    //    for (int i = 0; i < corners.Length; i++)
+    //    {
+    //        corners[i] = RectTransformUtility.WorldToScreenPoint(Camera.main, corners[i]);
+    //    }
+
+    //    return corners;
+    //}
+
 
     public void ClearSelection()
     {

@@ -13,6 +13,9 @@ public class MouseInputManager : MonoBehaviour
 
     private LayerMask walkableLayers;
 
+    private bool isDragging = false;
+    private float dragThreshold = 5f;
+
     void Start()
     {
         selectionController = GetComponent<SelectionController>();
@@ -34,16 +37,54 @@ public class MouseInputManager : MonoBehaviour
 
     private void HandleLeftClick()
     {
-        if (EventSystem.current.IsPointerOverGameObject())
+        if (EventSystem.current.IsPointerOverGameObject() && !selectionController.IsBoxSelecting)
         {
             return;
         }
 
-        if (Input.GetMouseButtonUp(0))
+        if (buildingController.IsPlacingBuilding)
         {
-            if (buildingController.IsPlacingBuilding)
+            if (Input.GetMouseButtonUp(0))
             {
                 buildingController.PlaceBuilding();
+
+                ResetMousePositions();
+            }
+
+            return;
+        }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            leftClickStartPos = Input.mousePosition;
+            isDragging = false;
+        }
+
+        if (Input.GetMouseButton(0))
+        {
+            if (!isDragging && Vector2.Distance(leftClickStartPos, Input.mousePosition) > dragThreshold)
+            {
+                isDragging = true;
+            }
+
+            if (isDragging)
+            {
+                if (!selectionController.IsBoxSelecting)
+                {
+                    selectionController.StartBoxSelection(leftClickStartPos);
+                }
+                else
+                {
+                    selectionController.UpdateBoxSelection(Input.mousePosition);
+                }
+            }
+        }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            if (isDragging)
+            {
+                selectionController.FinishBoxSelection();
             }
             else
             {
@@ -116,5 +157,6 @@ public class MouseInputManager : MonoBehaviour
     {
         leftClickStartPos = Vector2.zero;
         rightClickStartPos = Vector2.zero;
+        isDragging = false;
     }
 }
