@@ -52,6 +52,8 @@ public class ResourceController : MonoBehaviour
         {
             capacities[type] -= amount;
             Debug.Log($"{type} capacity decreased by {amount}. New capacity: {capacities[type]}");
+
+            ClampResourceToCapacity(type);
         }
     }
 
@@ -109,5 +111,15 @@ public class ResourceController : MonoBehaviour
     public int GetCapacity(ResourceType type)
     {
         return capacities.ContainsKey(type) ? capacities[type] : 0;
+    }
+
+    private void ClampResourceToCapacity(ResourceType type)
+    {
+        if (resources.ContainsKey(type))
+        {
+            resources[type] = Mathf.Min(resources[type], capacities[type]);
+
+            Debug.Log($"{type} clamped to {resources[type]} due to capacity limit: {capacities[type]}");
+        }
     }
 }

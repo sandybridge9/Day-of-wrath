@@ -48,6 +48,11 @@ public class KeyboardInputManager : MonoBehaviour
                 buildingController.RotateBuilding(1);
             }
         }
+
+        if (Input.GetKeyDown(KeyCode.Delete))
+        {
+            buildingActionController.DeleteSelectedBuilding();
+        }
     }
 
     private void HandleMultiSelectKey()

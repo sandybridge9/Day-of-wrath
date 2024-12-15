@@ -154,7 +154,7 @@ MonoBehaviour:
   startingWood: 1000
   startingStone: 250
   startingIron: 100
-  startingFood: 200
+  startingFood: 500
   startingGoldCapacity: 2000
   startingWoodCapacity: 1000
   startingStoneCapacity: 1000

@@ -23,4 +23,23 @@ public class BuildingActionController : MonoBehaviour
             Debug.LogWarning("BuildingActionController: No Barrack selected for training.");
         }
     }
+
+    public void DeleteSelectedBuilding()
+    {
+        if (selectionController.SelectedBuilding != null)
+        {
+            var building = selectionController.SelectedBuilding;
+
+            building.OnBuildingDestroyed();
+            selectionController.ClearSelection();
+
+            Destroy(building.gameObject);
+
+            Debug.Log($"{building.name} has been deleted.");
+        }
+        else
+        {
+            Debug.LogWarning("BuildingActionController: No building selected to delete.");
+        }
+    }
 }
