@@ -145,7 +145,7 @@ public class BuildingPlacementController : MonoBehaviour
 
         RestoreOriginalMaterials();
 
-        currentBuildingMainCollider.enabled = true;
+        currentBuildingMainCollider.enabled = false;
 
         building.OnBuildingPlaced();
 

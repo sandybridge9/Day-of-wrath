@@ -121,7 +121,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Health: 100
-  MovementSpeed: 5
+  MovementSpeed: 10
+  UnitRadius: 1.5
+  Costs:
+  - resourceType: 4
+    amount: 20
+  - resourceType: 1
+    amount: 5
+  - resourceType: 3
+    amount: 5
 --- !u!114 &7993834999125476080
 MonoBehaviour:
   m_ObjectHideFlags: 0

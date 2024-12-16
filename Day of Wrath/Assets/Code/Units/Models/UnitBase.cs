@@ -2,37 +2,22 @@ using UnityEngine;
 
 public class UnitBase : SelectableObject
 {
+    [Header("Basic Properties")]
     public float Health = 100f;
     public float MovementSpeed = 5f;
+    public float UnitRadius = 1.5f;
 
-    private bool IsMoving;
-    private Vector3 destination;
-
-    public override SelectableObjectType Type { get; } = SelectableObjectType.Unit;
+    [Header("Attack Properties")]
+    public float Damage = 10f;
+    public float AttackRange = 2f;
 
     [Header("Cost")]
     public Cost[] Costs;
+
+    public override SelectableObjectType Type { get; } = SelectableObjectType.Unit;
 
     protected override void Update()
     {
         base.Update();
     }
-
-    public virtual void BeginMoving(Vector3 newDestination)
-    {
-        if(transform.position != newDestination)
-        {
-            IsMoving = true;
-            destination = newDestination;
-
-            return;
-        }
-    }
-
-    public virtual void CancelMovement()
-    {
-        IsMoving = false;
-        destination = transform.position;
-    }
 }
-

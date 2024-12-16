@@ -12,6 +12,7 @@ public class MouseInputManager : MonoBehaviour
     private Vector2 rightClickStartPos;
 
     private LayerMask walkableLayers;
+    private LayerMask unitLayer;
 
     private bool isDragging = false;
     private float dragThreshold = 5f;
@@ -24,6 +25,7 @@ public class MouseInputManager : MonoBehaviour
         unitCommandController = GetComponent<UnitCommandController>();
 
         walkableLayers = LayerManager.WalkableLayers;
+        unitLayer = LayerManager.UnitLayer;
 
         ResetMousePositions();
     }
@@ -132,12 +134,21 @@ public class MouseInputManager : MonoBehaviour
             }
             else if (selectionController.AnySelectedUnits)
             {
-                Debug.Log("boss we got selected units, need to move em.");
-
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, walkableLayers))
+
+                if (Physics.Raycast(ray, out var hit1, Mathf.Infinity, unitLayer))
                 {
-                    unitCommandController.MoveSelectedUnits(hit.point);
+                    Debug.Log("Unit/units is selected and got orders to attack another unit");
+
+                    if (hit1.collider.TryGetComponent<UnitBase>(out var targetUnit))
+                    {
+                        unitCommandController.IssueAttackCommand(targetUnit);
+                    }
+                }
+                else if (Physics.Raycast(ray, out var hit2, Mathf.Infinity, walkableLayers))
+                {
+                    Debug.Log("Unit/units is selected and got orders to move to a location");
+                    unitCommandController.MoveSelectedUnits(hit2.point);
                 }
             }
         }
