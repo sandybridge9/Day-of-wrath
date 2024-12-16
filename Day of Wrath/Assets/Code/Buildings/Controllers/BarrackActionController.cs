@@ -21,12 +21,21 @@ public class BarrackActionController : MonoBehaviour
     private LayerMask unitTrainingBlockingLayers;
     private LayerMask groundLayers;
 
+    private ResourceController resourceController;
+
     private void Start()
     {
         unitTrainingBlockingLayers = LayerManager.UnitTrainingBlockingLayers;
         groundLayers = LayerManager.GroundLayers;
 
         warriorCollider = WarriorPrefab.GetComponent<BoxCollider>();
+
+        resourceController = GetComponent<ResourceController>();
+
+        if (resourceController == null)
+        {
+            throw new Exception("ResourceController not found in the scene!");
+        }
     }
 
     public void SetSelectedBarrack(BarrackBuilding barrack)
@@ -56,9 +65,21 @@ public class BarrackActionController : MonoBehaviour
     {
         if (selectedBarrack == null)
         {
+            Debug.Log("No selected BarrackBuilding");
+
             return;
         }
 
+        var unitCosts = WarriorPrefab.GetComponent<UnitBase>().Costs;
+
+        if (!resourceController.CanAfford(unitCosts))
+        {
+            Debug.LogWarning("Not enough resources to train the unit");
+
+            return;
+        }
+
+        resourceController.SpendResources(unitCosts);
         SpawnUnit(WarriorPrefab);
     }
 
