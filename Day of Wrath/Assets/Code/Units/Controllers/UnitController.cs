@@ -50,7 +50,7 @@ public class UnitController : MonoBehaviour
     {
         if (Physics.Raycast(position + Vector3.up * 5f, Vector3.down, out var hit, 10f, LayerManager.GroundLayers))
         {
-            position.y = hit.point.y + movementHeightOffset;
+            position.y = hit.point.y/* + movementHeightOffset*/;
         }
 
         isChasing = false;

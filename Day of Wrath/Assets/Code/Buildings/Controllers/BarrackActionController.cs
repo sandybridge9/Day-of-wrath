@@ -89,7 +89,7 @@ public class BarrackActionController : MonoBehaviour
 
         if (spawnPosition != Vector3.zero)
         {
-            spawnPosition = AdjustPositionToGround(spawnPosition, troopPrefab);
+            //spawnPosition = AdjustPositionToGround(spawnPosition, troopPrefab);
 
             Instantiate(troopPrefab, spawnPosition, Quaternion.identity);
         }
@@ -131,7 +131,7 @@ public class BarrackActionController : MonoBehaviour
             return false;
         }
 
-        if (Physics.CheckSphere(position, 0.5f, unitTrainingBlockingLayers))
+        if (Physics.CheckSphere(position, 1f, unitTrainingBlockingLayers))
         {
             return false;
         }
