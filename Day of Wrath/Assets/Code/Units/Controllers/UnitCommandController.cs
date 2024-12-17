@@ -40,7 +40,7 @@ public class UnitCommandController : MonoBehaviour
         }
     }
 
-    public void IssueAttackCommand(UnitBase targetEnemy)
+    public void IssueAttackCommand(SelectableObject target)
     {
         foreach (var unit in selectionController.SelectedUnits)
         {
@@ -48,7 +48,7 @@ public class UnitCommandController : MonoBehaviour
 
             if (unitController != null)
             {
-                unitController.SetAttackTarget(targetEnemy);
+                unitController.SetAttackTarget(target);
             }
         }
     }

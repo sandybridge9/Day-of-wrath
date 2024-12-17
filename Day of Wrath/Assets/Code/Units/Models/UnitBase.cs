@@ -20,4 +20,31 @@ public class UnitBase : SelectableObject
     {
         base.Update();
     }
+
+    public virtual void OnUnitTrained()
+    {
+
+    }
+
+    public virtual void OnUnitDeath()
+    {
+
+    }
+
+    public void TakeDamage(float damage)
+    {
+        Health -= damage;
+
+        if (Health <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        OnUnitDeath();
+
+        Destroy(gameObject);
+    }
 }

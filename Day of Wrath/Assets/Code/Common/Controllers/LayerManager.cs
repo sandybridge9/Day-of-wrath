@@ -27,4 +27,9 @@ public static class LayerManager
     );
 
     public static LayerMask UnitMovementObstacleLayers => LayerMask.GetMask(GlobalSettings.Layers.BuildingLayer);
+
+    public static LayerMask AttackableLayers => LayerMask.GetMask(
+        GlobalSettings.Layers.UnitLayer,
+        GlobalSettings.Layers.BuildingLayer
+    );
 }

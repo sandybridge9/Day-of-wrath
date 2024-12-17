@@ -3,10 +3,11 @@ using UnityEngine.SceneManagement;
 
 public class PauseMenuController : MonoBehaviour
 {
-    public static bool IsGamePaused = false;
+    public bool IsGamePaused = false;
 
     public GameObject PauseMenuUI;
     public GameObject PauseMenuUIBackground;
+    public GameObject SettingsMenuUI;
 
     // Update is called once per frame
     void Update()
@@ -28,6 +29,7 @@ public class PauseMenuController : MonoBehaviour
     {
         PauseMenuUI.SetActive(false);
         PauseMenuUIBackground.SetActive(false);
+        SettingsMenuUI.SetActive(false);
 
         Time.timeScale = 1f;
 

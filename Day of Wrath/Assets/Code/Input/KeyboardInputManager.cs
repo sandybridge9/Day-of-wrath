@@ -6,6 +6,7 @@ public class KeyboardInputManager : MonoBehaviour
     private BuildingPlacementController buildingController;
     private SelectionController selectionController;
     private BuildingActionController buildingActionController;
+    private PauseMenuController pauseMenuController;
 
     void Start()
     {
@@ -13,10 +14,16 @@ public class KeyboardInputManager : MonoBehaviour
         buildingController = GetComponent<BuildingPlacementController>();
         selectionController = GetComponent<SelectionController>();
         buildingActionController = GetComponent<BuildingActionController>();
+        pauseMenuController = FindObjectOfType<PauseMenuController>();
     }
 
     void Update()
     {
+        if (pauseMenuController.IsGamePaused)
+        {
+            return;
+        }
+
         HandleCameraMovement();
         HandleCameraRotationKey();
         HandleBuildingInputs();

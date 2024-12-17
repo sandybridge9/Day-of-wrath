@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class UnitController : MonoBehaviour
 {
-    private UnitBase unitBase;
+    private UnitBase thisUnit;
 
     [Header("Movement control settings")]
     public float avoidanceRadius = 3f;
@@ -11,7 +11,10 @@ public class UnitController : MonoBehaviour
     private Vector3 movementTargetPosition;
     private LayerMask unitMovementObstacleLayers;
 
-    private UnitBase targetEnemy;
+    private SelectableObject targetToAttack;
+
+    private bool isTargetBuilding;
+    private Vector3 buildingAttackPosition;
 
     private bool isMoving = false;
     private bool isAttacking = false;
@@ -19,7 +22,7 @@ public class UnitController : MonoBehaviour
 
     private void Start()
     {
-        unitBase = GetComponent<UnitBase>();
+        thisUnit = GetComponent<UnitBase>();
         unitMovementObstacleLayers = LayerManager.UnitMovementObstacleLayers;
 
         Collider unitCollider = GetComponent<Collider>();
@@ -41,11 +44,6 @@ public class UnitController : MonoBehaviour
         {
             AttackTarget();
         }
-
-        if (unitBase.Health <= 0)
-        {
-            Die();
-        }
     }
 
     public void SetMovementTargetPosition(Vector3 position)
@@ -57,42 +55,70 @@ public class UnitController : MonoBehaviour
 
         isChasing = false;
         isAttacking = false;
-        targetEnemy = null;
+        targetToAttack = null;
+        isTargetBuilding = false;
+        buildingAttackPosition = Vector3.zero;
 
         movementTargetPosition = position;
         isMoving = true;
     }
 
-    public void SetAttackTarget(UnitBase enemy)
+    public void SetAttackTarget(SelectableObject target)
     {
-        targetEnemy = enemy;
+        targetToAttack = target;
+
+        isTargetBuilding = target is BuildingBase;
+        isChasing = !isTargetBuilding;
+
+        if (isTargetBuilding)
+        {
+            var buildingCollider = target.GetComponentInChildren<Collider>();
+
+            if (buildingCollider != null)
+            {
+                var directionToBuilding = (transform.position - buildingCollider.bounds.center).normalized;
+                var attackRangeBuffer = thisUnit.AttackRange + 1f;
+
+                buildingAttackPosition = buildingCollider.bounds.center + directionToBuilding * attackRangeBuffer;
+
+                if (Physics.Raycast(buildingAttackPosition + Vector3.up * 5f, Vector3.down, out var hit, 10f, LayerManager.GroundLayers))
+                {
+                    buildingAttackPosition = hit.point;
+                }
+            }
+            else
+            {
+                buildingAttackPosition = target.transform.position;
+            }
+        }
+
         isMoving = true;
-        isChasing = true;
         isAttacking = false;
     }
 
     private void MoveToTarget()
     {
-        var targetPosition = isChasing && targetEnemy != null
-            ? targetEnemy.transform.position
-            : movementTargetPosition;
+        var targetPosition = isChasing && targetToAttack != null
+            ? targetToAttack.transform.position
+            : isTargetBuilding
+                ? buildingAttackPosition
+                : movementTargetPosition;
 
         var direction = (targetPosition - transform.position).normalized;
-
         direction = ApplyObstacleAvoidance(direction);
 
-        var movePosition = transform.position + direction * unitBase.MovementSpeed * Time.deltaTime;
+        var movePosition = transform.position + direction * thisUnit.MovementSpeed * Time.deltaTime;
         transform.position = movePosition;
 
-        var distanceThreshold = isChasing
-            ? unitBase.AttackRange
+        var distanceThreshold = isChasing || isTargetBuilding
+            ? thisUnit.AttackRange
             : 0.1f;
 
         if (Vector3.Distance(transform.position, targetPosition) < distanceThreshold)
         {
             isMoving = false;
 
-            if (isChasing)
+            if (isChasing || isTargetBuilding)
             {
                 isAttacking = true;
             }
@@ -112,35 +138,44 @@ public class UnitController : MonoBehaviour
 
     private void AttackTarget()
     {
-        if (targetEnemy == null)
+        if (targetToAttack == null)
         {
             isAttacking = false;
-
             return;
         }
 
-        var distance = Vector3.Distance(transform.position, targetEnemy.transform.position);
+        var distance = isTargetBuilding
+            ? Vector3.Distance(transform.position, buildingAttackPosition)
+            : Vector3.Distance(transform.position, targetToAttack.transform.position);
 
-        if (distance > unitBase.AttackRange)
+        if (distance > thisUnit.AttackRange)
         {
             isAttacking = false;
             isMoving = true;
-            isChasing = true;
+            isChasing = !isTargetBuilding;
 
             return;
         }
 
-        targetEnemy.Health -= unitBase.Damage * Time.deltaTime;
-
-        if (targetEnemy.Health <= 0)
+        if (isTargetBuilding)
         {
-            targetEnemy = null;
+            ((BuildingBase)targetToAttack).TakeDamage(thisUnit.Damage * Time.deltaTime);
+
+            if (((BuildingBase)targetToAttack).Health <= 0)
+            {
+                targetToAttack = null;
+                isAttacking = false;
+            }
+
+            return;
+        }
+
+        ((UnitBase)targetToAttack).TakeDamage(thisUnit.Damage * Time.deltaTime);
+
+        if (((UnitBase)targetToAttack).Health <= 0)
+        {
+            targetToAttack = null;
             isAttacking = false;
         }
-    }
-
-    private void Die()
-    {
-        Destroy(gameObject);
     }
 }

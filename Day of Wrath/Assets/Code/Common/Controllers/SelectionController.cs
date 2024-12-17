@@ -10,13 +10,18 @@ public class SelectionController : MonoBehaviour
     public BuildingBase SelectedBuilding = null;
 
     [HideInInspector]
-    public bool AnySelectedUnits => SelectedUnits.Count > 0;
+    public bool AnySelectedUnits()
+    {
+        SelectedUnits.RemoveAll(x => x == null);
+
+        return SelectedUnits.Count > 0;
+    }
 
     [HideInInspector]
     public bool IsBuildingSelected => SelectedBuilding != null;
 
     [HideInInspector]
-    public bool IsAnythingSelected => AnySelectedUnits || IsBuildingSelected;
+    public bool IsAnythingSelected => AnySelectedUnits() || IsBuildingSelected;
 
     [HideInInspector]
     public bool IsMultiSelectEnabled { get; set; }

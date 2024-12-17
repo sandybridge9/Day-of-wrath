@@ -7,12 +7,13 @@ public class MouseInputManager : MonoBehaviour
     private BuildingPlacementController buildingController;
     private MainCameraController mainCameraController;
     private UnitCommandController unitCommandController;
+    private PauseMenuController pauseMenuController;
 
     private Vector2 leftClickStartPos;
     private Vector2 rightClickStartPos;
 
     private LayerMask walkableLayers;
-    private LayerMask unitLayer;
+    private LayerMask attackableLayers;
 
     private bool isDragging = false;
     private float dragThreshold = 5f;
@@ -23,15 +24,21 @@ public class MouseInputManager : MonoBehaviour
         buildingController = GetComponent<BuildingPlacementController>();
         mainCameraController = Camera.main.GetComponent<MainCameraController>();
         unitCommandController = GetComponent<UnitCommandController>();
+        pauseMenuController = FindObjectOfType<PauseMenuController>();
 
         walkableLayers = LayerManager.WalkableLayers;
-        unitLayer = LayerManager.UnitLayer;
+        attackableLayers = LayerManager.AttackableLayers;
 
         ResetMousePositions();
     }
 
     void Update()
     {
+        if (pauseMenuController.IsGamePaused)
+        {
+            return;
+        }
+
         HandleLeftClick();
         HandleRightClick();
         HandleScrollWheel();
@@ -132,22 +139,33 @@ public class MouseInputManager : MonoBehaviour
             {
                 buildingController.CancelPlacement();
             }
-            else if (selectionController.AnySelectedUnits)
+            else if (selectionController.AnySelectedUnits())
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-                if (Physics.Raycast(ray, out var hit1, Mathf.Infinity, unitLayer))
+                if (Physics.Raycast(ray, out var hit1, Mathf.Infinity, attackableLayers))
                 {
-                    Debug.Log("Unit/units is selected and got orders to attack another unit");
-
-                    if (hit1.collider.TryGetComponent<UnitBase>(out var targetUnit))
+                    if (hit1.collider.TryGetComponent<SelectableObject>(out var target))
                     {
-                        unitCommandController.IssueAttackCommand(targetUnit);
+                        Debug.Log($"Unit/units is selected and got orders to attack a {target}");
+
+                        unitCommandController.IssueAttackCommand(target);
+
+                        return;
+                    }
+
+                    target = hit1.collider.gameObject.GetComponentInParent<SelectableObject>();
+
+                    if(target != null)
+                    {
+                        Debug.Log($"Unit/units is selected and got orders to attack a {target}");
+
+                        unitCommandController.IssueAttackCommand(target);
                     }
                 }
                 else if (Physics.Raycast(ray, out var hit2, Mathf.Infinity, walkableLayers))
                 {
-                    Debug.Log("Unit/units is selected and got orders to move to a location");
+                    Debug.Log($"Unit/units is selected and got orders to move to a location {hit2.point}");
                     unitCommandController.MoveSelectedUnits(hit2.point);
                 }
             }
