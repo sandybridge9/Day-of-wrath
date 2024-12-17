@@ -20,7 +20,7 @@ public class ResourceController : MonoBehaviour
     private Dictionary<ResourceType, int> resources = new Dictionary<ResourceType, int>();
     private Dictionary<ResourceType, int> capacities = new Dictionary<ResourceType, int>();
 
-    private void Start()
+    public void Start()
     {
         // Initialize resources
         resources[ResourceType.Gold] = startingGold;

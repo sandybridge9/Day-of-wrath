@@ -53,7 +53,7 @@ public class UnitCommandController : MonoBehaviour
         }
     }
 
-    private List<Vector3> CalculateGridPositions(Vector3 basePosition, int unitCount)
+    public List<Vector3> CalculateGridPositions(Vector3 basePosition, int unitCount)
     {
         var positions = new List<Vector3>();
         var gridSize = Mathf.CeilToInt(Mathf.Sqrt(unitCount));

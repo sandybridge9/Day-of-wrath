@@ -23,7 +23,7 @@ public class BarrackActionController : MonoBehaviour
 
     private ResourceController resourceController;
 
-    private void Start()
+    public void Start()
     {
         unitTrainingBlockingLayers = LayerManager.UnitTrainingBlockingLayers;
         groundLayers = LayerManager.GroundLayers;
