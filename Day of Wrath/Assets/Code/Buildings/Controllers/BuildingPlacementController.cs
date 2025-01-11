@@ -81,6 +81,11 @@ public class BuildingPlacementController : MonoBehaviour
         }
     }
 
+    public bool TryGetBuildingPrefab(BuildingType buildingType, out GameObject buildingPrefab)
+    {
+        return buildingPrefabs.TryGetValue(buildingType, out buildingPrefab);
+    }
+
     public void StartBuildingPlacement(BuildingType buildingType)
     {
         if (!buildingPrefabs.TryGetValue(buildingType, out GameObject buildingPrefab))
