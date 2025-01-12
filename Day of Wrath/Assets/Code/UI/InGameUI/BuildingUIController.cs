@@ -17,7 +17,7 @@ public class BuildingUIController : MonoBehaviour
     public Button woodcutterButton;
 
     [Header("UI Elements")]
-    public TextMeshProUGUI buildingCostText;
+    public TextMeshProUGUI costText;
 
     private void Start()
     {
@@ -26,7 +26,6 @@ public class BuildingUIController : MonoBehaviour
             throw new System.Exception($"BuildingUIController on object {transform} doesn't have a BuildingPlacementController assigned.");
         }
 
-        // Assign button click listeners
         townHallButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.TownHall));
         barracksButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Barracks));
         warehouseButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Warehouse));
@@ -35,7 +34,6 @@ public class BuildingUIController : MonoBehaviour
         mineButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Mine));
         woodcutterButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Woodcutter));
 
-        // Assign hover listeners
         AddHoverListeners(townHallButton, BuildingType.TownHall);
         AddHoverListeners(barracksButton, BuildingType.Barracks);
         AddHoverListeners(warehouseButton, BuildingType.Warehouse);
@@ -77,15 +75,15 @@ public class BuildingUIController : MonoBehaviour
 
             if (buildingBase != null)
             {
-                buildingCostText.text = GetCostText(buildingBase.Costs);
-                buildingCostText.gameObject.SetActive(true);
+                costText.text = GetCostText(buildingBase.Costs);
+                costText.gameObject.SetActive(true);
             }
         }
     }
 
     private void HideBuildingCost()
     {
-        buildingCostText.gameObject.SetActive(false);
+        costText.gameObject.SetActive(false);
     }
 
     private string GetCostText(Cost[] costs)

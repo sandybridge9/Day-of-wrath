@@ -8,8 +8,10 @@ public class BarrackActionController : MonoBehaviour
 {
     [Header("Unit types")]
     public GameObject WarriorPrefab;
+    // public GameObject ArcherPrefab;
 
     private BoxCollider warriorCollider;
+    private BoxCollider archerCollider;
 
     public float SpawnRadius = 5f;
     public int MaxSpawnAttempts = 100;
@@ -29,6 +31,7 @@ public class BarrackActionController : MonoBehaviour
         groundLayers = LayerManager.GroundLayers;
 
         warriorCollider = WarriorPrefab.GetComponent<BoxCollider>();
+        // archerCollider = ArcherPrefab.GetComponent<BoxCollider>();
 
         resourceController = GetComponent<ResourceController>();
 

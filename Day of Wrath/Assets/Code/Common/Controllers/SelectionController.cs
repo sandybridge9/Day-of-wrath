@@ -33,6 +33,9 @@ public class SelectionController : MonoBehaviour
 
     private LayerMask unitLayerMask;
 
+    public delegate void BuildingSelectedHandler(BuildingBase building);
+    public event BuildingSelectedHandler OnBuildingSelected;
+
     private void Start()
     {
         if (SelectionBox != null)
@@ -107,6 +110,7 @@ public class SelectionController : MonoBehaviour
         {
             building.IsSelected = true;
             SelectedBuilding = building;
+            OnBuildingSelected?.Invoke(building);
             Debug.Log("Building selected: " + building.name);
         }
     }
@@ -203,5 +207,6 @@ public class SelectionController : MonoBehaviour
         }
 
         SelectedUnits.Clear();
+        OnBuildingSelected?.Invoke(null);
     }
 }
