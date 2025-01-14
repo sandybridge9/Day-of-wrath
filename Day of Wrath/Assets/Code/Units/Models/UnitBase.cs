@@ -9,12 +9,22 @@ public class UnitBase : SelectableObject
 
     [Header("Attack Properties")]
     public float Damage = 10f;
-    public float AttackRange = 2f;
+    public float AttackRange = 1f;
 
     [Header("Cost")]
     public Cost[] Costs;
 
+    [SerializeField]
+    private Team team = Team.Friendly;
+
+    public override Team Team
+    {
+        get => team;
+        set => team = value;
+    }
+
     public override SelectableObjectType Type { get; } = SelectableObjectType.Unit;
+
 
     protected override void Update()
     {

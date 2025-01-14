@@ -276,7 +276,7 @@ GameObject:
   - component: {fileID: 2343340923785343141}
   - component: {fileID: 3780903433572283165}
   m_Layer: 6
-  m_Name: Warrior2
+  m_Name: EnemyWarrior
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -341,7 +341,7 @@ MonoBehaviour:
     amount: 20
   - resourceType: 3
     amount: 5
-  team: 0
+  team: 1
 --- !u!114 &2343340923785343141
 MonoBehaviour:
   m_ObjectHideFlags: 0

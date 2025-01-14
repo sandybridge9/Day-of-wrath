@@ -12,14 +12,18 @@ public class BuildingPlacementController : MonoBehaviour
     public GameObject minePrefab;
     public GameObject woodcutterPrefab;
     //public GameObject smallTower;
-    //public GameObject mediumTower;
+    public GameObject mediumTowerPrefab;
     //public GameObject largeTowerPrefab;
     //public GameObject gatehousePrefab;
-     
+    public GameObject wallSectionPrefab;
+
     private Dictionary<BuildingType, GameObject> buildingPrefabs;
 
     private LayerMask groundLayers;
     private LayerMask blockingLayers;
+
+    public Color canBuildColor = new(0, 1, 0, 0.5f);
+    public Color cannotBuildColor = new(1, 0, 0, 0.5f);
 
     public float buildingRotationSpeed = GlobalSettings.Buildings.RotationSpeed;
 
@@ -29,9 +33,6 @@ public class BuildingPlacementController : MonoBehaviour
     private bool canPlaceBuilding = false;
     private bool couldPlaceBuildingLastFrame = false;
 
-    public Color canBuildColor = new(0, 1, 0, 0.5f);
-    public Color cannotBuildColor = new(1, 0, 0, 0.5f);
-
     private GameObject currentBuilding;
     private List<Renderer> currentBuildingRenderers = new();
     private List<Material> currentBuildingOriginalMaterials = new();
@@ -39,6 +40,10 @@ public class BuildingPlacementController : MonoBehaviour
 
     private Collider currentBuildingMainCollider;
     private Collider currentBuildingPlacementCollider;
+
+    public bool IsPlacingWalls { get; private set; } = false;
+    private Vector3 startDragPosition;
+    private List<GameObject> wallPreviews = new List<GameObject>();
 
     private ResourceController resourceController;
 
@@ -59,9 +64,10 @@ public class BuildingPlacementController : MonoBehaviour
             { BuildingType.Mine, minePrefab },
             { BuildingType.Woodcutter, woodcutterPrefab },
             //{ BuildingType.SmallTower, smallTower },
-            //{ BuildingType.MediumTower, mediumTower },
+            { BuildingType.MediumTower, mediumTowerPrefab },
             //{ BuildingType.LargeTower, largeTowerPrefab },
             //{ BuildingType.Gatehouse, gatehousePrefab }
+            { BuildingType.Walls, wallSectionPrefab },
         };
     }
 
@@ -78,6 +84,11 @@ public class BuildingPlacementController : MonoBehaviour
             }
 
             couldPlaceBuildingLastFrame = canPlaceBuilding;
+        }
+
+        if (IsPlacingWalls)
+        {
+
         }
     }
 

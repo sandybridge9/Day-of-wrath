@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.UI.CanvasScaler;
 
 public class SelectionController : MonoBehaviour
 {
@@ -106,11 +107,14 @@ public class SelectionController : MonoBehaviour
     {
         ClearSelection();
 
-        if (building != null)
+        if (building != null
+            && !building.IsFromDifferentTeam(Team.Friendly))
         {
             building.IsSelected = true;
             SelectedBuilding = building;
+
             OnBuildingSelected?.Invoke(building);
+
             Debug.Log("Building selected: " + building.name);
         }
     }
@@ -122,12 +126,14 @@ public class SelectionController : MonoBehaviour
             ClearSelection();
         }
 
-        if (unit != null)
+        if (unit != null
+            && !unit.IsFromDifferentTeam(Team.Friendly))
         {
-            unit.IsSelected = true;
             if (!SelectedUnits.Contains(unit))
             {
+                unit.IsSelected = true;
                 SelectedUnits.Add(unit);
+
                 Debug.Log("Unit selected: " + unit.name);
             }
         }
@@ -171,7 +177,8 @@ public class SelectionController : MonoBehaviour
         {
             Vector3 unitScreenPos = Camera.main.WorldToScreenPoint(unit.transform.position);
 
-            if (selectionRect.Contains(unitScreenPos, true))
+            if (selectionRect.Contains(unitScreenPos, true)
+                && !unit.IsFromDifferentTeam(Team.Friendly))
             {
                 unit.IsSelected = true;
                 SelectedUnits.Add(unit);

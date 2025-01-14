@@ -44,6 +44,11 @@ public class UnitCommandController : MonoBehaviour
     {
         foreach (var unit in selectionController.SelectedUnits)
         {
+            if (!target.IsFromDifferentTeam(unit.Team))
+            {
+                continue;
+            }
+
             var unitController = unit.GetComponent<UnitController>();
 
             if (unitController != null)

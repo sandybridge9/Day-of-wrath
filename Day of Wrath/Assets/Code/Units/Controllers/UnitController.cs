@@ -65,6 +65,11 @@ public class UnitController : MonoBehaviour
 
     public void SetAttackTarget(SelectableObject target)
     {
+        if (!target.IsFromDifferentTeam(thisUnit.Team))
+        {
+            return;
+        }
+
         targetToAttack = target;
 
         isTargetBuilding = target is BuildingBase;
@@ -76,14 +81,18 @@ public class UnitController : MonoBehaviour
 
             if (buildingCollider != null)
             {
-                var directionToBuilding = (transform.position - buildingCollider.bounds.center).normalized;
-                var attackRangeBuffer = thisUnit.AttackRange + 1f;
+                // Raycast from the unit's position toward the building to find a valid attack position
+                var directionToBuilding = (buildingCollider.bounds.center - transform.position).normalized;
 
-                buildingAttackPosition = buildingCollider.bounds.center + directionToBuilding * attackRangeBuffer;
-
-                if (Physics.Raycast(buildingAttackPosition + Vector3.up * 5f, Vector3.down, out var hit, 10f, LayerManager.GroundLayers))
+                if (Physics.Raycast(transform.position, directionToBuilding, out var hit, Mathf.Infinity, LayerManager.UnitMovementObstacleLayers))
                 {
-                    buildingAttackPosition = hit.point;
+                    // Stop at the point where the ray hits the building's collider, adjusted by the attack range
+                    buildingAttackPosition = hit.point - directionToBuilding * thisUnit.AttackRange;
+                }
+                else
+                {
+                    // Fallback to the building's center if raycast fails
+                    buildingAttackPosition = buildingCollider.bounds.center;
                 }
             }
             else
@@ -95,6 +104,38 @@ public class UnitController : MonoBehaviour
         isMoving = true;
         isAttacking = false;
     }
+
+    //public void SetAttackTarget(SelectableObject target)
+    //{
+    //    if (!target.IsFromDifferentTeam(thisUnit.Team))
+    //    {
+    //        return;
+    //    }
+
+    //    targetToAttack = target;
+
+    //    isTargetBuilding = target is BuildingBase;
+    //    isChasing = !isTargetBuilding;
+
+    //    if (isTargetBuilding)
+    //    {
+    //        var buildingCollider = target.GetComponentInChildren<Collider>();
+
+    //        if (buildingCollider != null)
+    //        {
+    //            // Calculate the attack position as the closest point on the building's bounds, adjusted by the unit's attack range
+    //            var directionToBuilding = (buildingCollider.bounds.center - transform.position).normalized;
+    //            buildingAttackPosition = buildingCollider.bounds.center - directionToBuilding * (buildingCollider.bounds.extents.magnitude + thisUnit.AttackRange);
+    //        }
+    //        else
+    //        {
+    //            buildingAttackPosition = target.transform.position;
+    //        }
+    //    }
+
+    //    isMoving = true;
+    //    isAttacking = false;
+    //}
 
     private void MoveToTarget()
     {
@@ -110,7 +151,8 @@ public class UnitController : MonoBehaviour
         var movePosition = transform.position + direction * thisUnit.MovementSpeed * Time.deltaTime;
         transform.position = movePosition;
 
-        var distanceThreshold = isChasing || isTargetBuilding
+        // Adjust the distance threshold for buildings to account for their size
+        var distanceThreshold = isTargetBuilding
             ? thisUnit.AttackRange
             : 0.1f;
 
@@ -124,6 +166,36 @@ public class UnitController : MonoBehaviour
             }
         }
     }
+
+    //private void MoveToTarget()
+    //{
+    //    var targetPosition = isChasing && targetToAttack != null
+    //        ? targetToAttack.transform.position
+    //        : isTargetBuilding
+    //            ? buildingAttackPosition
+    //            : movementTargetPosition;
+
+    //    var direction = (targetPosition - transform.position).normalized;
+    //    direction = ApplyObstacleAvoidance(direction);
+
+    //    var movePosition = transform.position + direction * thisUnit.MovementSpeed * Time.deltaTime;
+    //    transform.position = movePosition;
+
+    //    // Adjust the distance threshold for buildings to account for their size
+    //    var distanceThreshold = isTargetBuilding
+    //        ? thisUnit.AttackRange + 0.5f
+    //        : 0.1f;
+
+    //    if (Vector3.Distance(transform.position, targetPosition) < distanceThreshold)
+    //    {
+    //        isMoving = false;
+
+    //        if (isChasing || isTargetBuilding)
+    //        {
+    //            isAttacking = true;
+    //        }
+    //    }
+    //}
 
     private Vector3 ApplyObstacleAvoidance(Vector3 moveDirection)
     {
@@ -141,6 +213,15 @@ public class UnitController : MonoBehaviour
         if (targetToAttack == null)
         {
             isAttacking = false;
+
+            return;
+        }
+
+        if (!targetToAttack.IsFromDifferentTeam(thisUnit.Team))
+        {
+            targetToAttack = null;
+            isAttacking = false;
+
             return;
         }
 

@@ -15,6 +15,8 @@ public class BuildingUIController : MonoBehaviour
     public Button farmButton;
     public Button mineButton;
     public Button woodcutterButton;
+    public Button mediumTowerButton;
+    public Button wallsButton;
 
     [Header("UI Elements")]
     public TextMeshProUGUI costText;
@@ -33,6 +35,8 @@ public class BuildingUIController : MonoBehaviour
         farmButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Farm));
         mineButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Mine));
         woodcutterButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Woodcutter));
+        mediumTowerButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.MediumTower));
+        wallsButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Walls));
 
         AddHoverListeners(townHallButton, BuildingType.TownHall);
         AddHoverListeners(barracksButton, BuildingType.Barracks);
@@ -41,6 +45,8 @@ public class BuildingUIController : MonoBehaviour
         AddHoverListeners(farmButton, BuildingType.Farm);
         AddHoverListeners(mineButton, BuildingType.Mine);
         AddHoverListeners(woodcutterButton, BuildingType.Woodcutter);
+        AddHoverListeners(mediumTowerButton, BuildingType.MediumTower);
+        AddHoverListeners(wallsButton, BuildingType.Walls);
     }
 
     private void OnBuildingButtonClicked(BuildingType buildingType)

@@ -8,6 +8,15 @@ public class BuildingBase : SelectableObject
     [Header("Cost")]
     public Cost[] Costs;
 
+    [SerializeField]
+    private Team team = Team.Friendly;
+
+    public override Team Team
+    {
+        get => team;
+        set => team = value;
+    }
+
     public override SelectableObjectType Type { get; } = SelectableObjectType.Building;
 
     protected override void Start()

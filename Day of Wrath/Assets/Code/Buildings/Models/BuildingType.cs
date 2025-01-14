@@ -10,5 +10,6 @@ public enum BuildingType
     SmallTower,
     MediumTower,
     LargeTower,
-    Gatehouse
+    Gatehouse,
+    Walls
 }
