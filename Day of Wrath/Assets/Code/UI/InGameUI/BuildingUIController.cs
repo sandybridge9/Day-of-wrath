@@ -36,7 +36,7 @@ public class BuildingUIController : MonoBehaviour
         mineButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Mine));
         woodcutterButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Woodcutter));
         mediumTowerButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.MediumTower));
-        wallsButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Walls));
+        wallsButton.onClick.AddListener(() => OnWallsButtonClicked());
 
         AddHoverListeners(townHallButton, BuildingType.TownHall);
         AddHoverListeners(barracksButton, BuildingType.Barracks);
@@ -52,6 +52,11 @@ public class BuildingUIController : MonoBehaviour
     private void OnBuildingButtonClicked(BuildingType buildingType)
     {
         buildingPlacementController.StartBuildingPlacement(buildingType);
+    }
+
+    private void OnWallsButtonClicked()
+    {
+        buildingPlacementController.StartLookingForWallPlacementLocation();
     }
 
     private void AddHoverListeners(Button button, BuildingType buildingType)

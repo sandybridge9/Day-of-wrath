@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class BuildingPlacementController : MonoBehaviour
@@ -11,10 +12,10 @@ public class BuildingPlacementController : MonoBehaviour
     public GameObject farmPrefab;
     public GameObject minePrefab;
     public GameObject woodcutterPrefab;
-    //public GameObject smallTower;
+    public GameObject smallTower;
     public GameObject mediumTowerPrefab;
-    //public GameObject largeTowerPrefab;
-    //public GameObject gatehousePrefab;
+    public GameObject largeTowerPrefab;
+    public GameObject gatehousePrefab;
     public GameObject wallSectionPrefab;
 
     private Dictionary<BuildingType, GameObject> buildingPrefabs;
@@ -38,14 +39,36 @@ public class BuildingPlacementController : MonoBehaviour
     private List<Material> currentBuildingOriginalMaterials = new();
     private List<Material> currentBuildingCurrentMaterials = new();
 
-    private Collider currentBuildingMainCollider;
     private Collider currentBuildingPlacementCollider;
 
-    public bool IsPlacingWalls { get; private set; } = false;
-    private Vector3 startDragPosition;
-    private List<GameObject> wallPreviews = new List<GameObject>();
-
     private ResourceController resourceController;
+
+    // ---------- WALL LOGIC --------------
+    public bool IsLookingForWallPlacementLocation { get; private set; } = false;
+    private bool canPlaceWall = false;
+    private bool couldPlaceWallLastFrame = false;
+
+    public bool IsPlacingWalls = false;
+    private bool canPlaceWalls = false;
+    private bool couldPlaceWallsLastFrame = false;
+
+    private float WallGridSize = 0.85f;
+
+    private GameObject placementCheckWallSection;
+    private Collider placementCheckWallSectionPlacementCollider;
+    private List<Renderer> placementCheckWallSectionRenderers = new();
+    private Vector3 currentPlacementCheckWallSectionLocation;
+    private Vector3 lastPlacementCheckWallSectionLocation;
+
+    private List<Material> wallOriginalMaterials = new();
+
+    private List<GameObject> walls = new();
+    private List<Collider> wallPlacementColliders = new();
+    private List<Renderer> wallRenderers = new();
+
+    private Vector3 dragStartPosition;
+    private Vector3 currentDragEndPosition;
+    private Vector3 lastDragEndPosition;
 
     private void Start()
     {
@@ -63,10 +86,10 @@ public class BuildingPlacementController : MonoBehaviour
             { BuildingType.Farm, farmPrefab },
             { BuildingType.Mine, minePrefab },
             { BuildingType.Woodcutter, woodcutterPrefab },
-            //{ BuildingType.SmallTower, smallTower },
+            { BuildingType.SmallTower, smallTower },
             { BuildingType.MediumTower, mediumTowerPrefab },
-            //{ BuildingType.LargeTower, largeTowerPrefab },
-            //{ BuildingType.Gatehouse, gatehousePrefab }
+            { BuildingType.LargeTower, largeTowerPrefab },
+            { BuildingType.Gatehouse, gatehousePrefab },
             { BuildingType.Walls, wallSectionPrefab },
         };
     }
@@ -75,20 +98,15 @@ public class BuildingPlacementController : MonoBehaviour
     {
         if (IsPlacingBuilding)
         {
-            UpdateBuildingPosition();
-            CheckPlacementValidity();
-
-            if(couldPlaceBuildingLastFrame != canPlaceBuilding)
-            {
-                SetBuildingTransparency(canPlaceBuilding ? canBuildColor : cannotBuildColor);
-            }
-
-            couldPlaceBuildingLastFrame = canPlaceBuilding;
+            HandleBuildingPlacement();
         }
-
-        if (IsPlacingWalls)
+        else if (IsLookingForWallPlacementLocation && !IsPlacingWalls)
         {
-
+            HandleLookingForWallPlacementLocation();
+        }
+        else if (IsPlacingWalls)
+        {
+            HandleWallPlacement();
         }
     }
 
@@ -99,7 +117,7 @@ public class BuildingPlacementController : MonoBehaviour
 
     public void StartBuildingPlacement(BuildingType buildingType)
     {
-        if (!buildingPrefabs.TryGetValue(buildingType, out GameObject buildingPrefab))
+        if (!buildingPrefabs.TryGetValue(buildingType, out var buildingPrefab))
         {
             Debug.LogError($"No prefab assigned for building type: {buildingType}");
             return;
@@ -114,7 +132,7 @@ public class BuildingPlacementController : MonoBehaviour
 
         Debug.Log("Can afford this building.");
 
-        if (currentBuilding != null)
+        if (placementCheckWallSection != null || currentBuilding != null)
         {
             CancelPlacement();
         }
@@ -123,7 +141,6 @@ public class BuildingPlacementController : MonoBehaviour
 
         currentBuilding = Instantiate(buildingPrefab);
 
-        currentBuildingMainCollider = currentBuilding.GetComponent<Collider>();
         currentBuildingPlacementCollider = currentBuilding.transform.Find(PlacementTriggerGameObjectName).GetComponent<Collider>();
 
         currentBuildingRenderers.AddRange(currentBuilding.GetComponents<Renderer>());
@@ -138,9 +155,7 @@ public class BuildingPlacementController : MonoBehaviour
             }
         }
 
-        currentBuildingMainCollider.enabled = false;
-
-        CheckPlacementValidity();
+        CheckBuildingPlacementValidity();
 
         SetBuildingTransparency(canPlaceBuilding ? canBuildColor : cannotBuildColor);
     }
@@ -160,8 +175,6 @@ public class BuildingPlacementController : MonoBehaviour
         }
 
         RestoreOriginalMaterials();
-
-        currentBuildingMainCollider.enabled = false;
 
         building.OnBuildingPlaced();
 
@@ -187,7 +200,24 @@ public class BuildingPlacementController : MonoBehaviour
 
         ClearCurrentBuildingData();
 
+        DestroyWallGameObjects();
+
+        ClearAllWallData();
+
         ClearControllerData();
+    }
+
+    private void HandleBuildingPlacement()
+    {
+        UpdateBuildingPosition();
+        CheckBuildingPlacementValidity();
+
+        if (couldPlaceBuildingLastFrame != canPlaceBuilding)
+        {
+            SetBuildingTransparency(canPlaceBuilding ? canBuildColor : cannotBuildColor);
+        }
+
+        couldPlaceBuildingLastFrame = canPlaceBuilding;
     }
 
     private void ClearCurrentBuildingData()
@@ -196,7 +226,6 @@ public class BuildingPlacementController : MonoBehaviour
         currentBuildingCurrentMaterials.Clear();
         currentBuildingRenderers.Clear();
         currentBuilding = null;
-        currentBuildingMainCollider = null;
         currentBuildingPlacementCollider = null;
     }
 
@@ -205,19 +234,27 @@ public class BuildingPlacementController : MonoBehaviour
         IsPlacingBuilding = false;
         canPlaceBuilding = false;
         couldPlaceBuildingLastFrame = false;
+
+        IsLookingForWallPlacementLocation = false;
+        canPlaceWall = false;
+        couldPlaceWallLastFrame = false;
+
+        IsPlacingWalls = false;
+        canPlaceWalls = false;
+        couldPlaceWallsLastFrame = false;
     }
 
     private void UpdateBuildingPosition()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, groundLayers))
+        if (Physics.Raycast(ray, out var hit, Mathf.Infinity, groundLayers))
         {
             currentBuilding.transform.position = hit.point;
         }
     }
 
-    private void CheckPlacementValidity()
+    private void CheckBuildingPlacementValidity()
     {
         var placementColliderCenter = currentBuildingPlacementCollider.bounds.center;
         var placementColliderExtents = currentBuildingPlacementCollider.bounds.extents;
@@ -241,9 +278,9 @@ public class BuildingPlacementController : MonoBehaviour
         {
             var materials = renderer.materials;
 
-            for (int i = 0; i < materials.Length; i++)
+            foreach (var material in materials)
             {
-                materials[i].color = color;
+                material.color = color;
             }
 
             renderer.materials = materials;
@@ -256,15 +293,400 @@ public class BuildingPlacementController : MonoBehaviour
 
         foreach (var renderer in currentBuildingRenderers)
         {
-            Material[] materials = renderer.materials;
+            var materials = renderer.materials;
 
-            for (int i = 0; i < materials.Length; i++)
+            foreach (var material in materials)
             {
-                materials[i].CopyPropertiesFromMaterial(currentBuildingOriginalMaterials[materialIndex]);
+                material.CopyPropertiesFromMaterial(currentBuildingOriginalMaterials[materialIndex]);
                 materialIndex++;
             }
 
             renderer.materials = materials;
+        }
+    }
+
+    /* ---- LOOKING FOR WALL PLACEMENT LOCATION ---- */
+
+    public void StartLookingForWallPlacementLocation()
+    {
+        if (!buildingPrefabs.TryGetValue(BuildingType.Walls, out var wallPrefab))
+        {
+            Debug.LogError($"No prefab assigned for building type: {BuildingType.Walls}");
+            return;
+        }
+
+        if (!resourceController.CanAfford(wallPrefab.GetComponent<BuildingBase>().Costs))
+        {
+            Debug.Log("Can't afford walls.");
+
+            return;
+        }
+
+        Debug.Log("Can afford walls.");
+
+        if (placementCheckWallSection != null || currentBuilding != null)
+        {
+            CancelPlacement();
+        }
+
+        IsLookingForWallPlacementLocation = true;
+
+        placementCheckWallSection = Instantiate(wallPrefab);
+
+        placementCheckWallSectionPlacementCollider = placementCheckWallSection.transform.Find(PlacementTriggerGameObjectName).GetComponent<Collider>();
+
+        placementCheckWallSectionRenderers.AddRange(placementCheckWallSection.GetComponents<Renderer>());
+        placementCheckWallSectionRenderers.AddRange(placementCheckWallSection.GetComponentsInChildren<Renderer>());
+
+        foreach (var renderer in placementCheckWallSectionRenderers)
+        {
+            foreach (var material in renderer.materials)
+            {
+                wallOriginalMaterials.Add(new Material(material));
+            }
+        }
+        
+        CheckCurrentWallPlacementValidity();
+
+        SetBuildingTransparency(canPlaceBuilding ? canBuildColor : cannotBuildColor);
+    }
+
+    private void CheckCurrentWallPlacementValidity()
+    {
+        var placementColliderCenter = placementCheckWallSectionPlacementCollider.bounds.center;
+        var placementColliderExtents = placementCheckWallSectionPlacementCollider.bounds.extents;
+        var placementColliderRotation = placementCheckWallSectionPlacementCollider.transform.rotation;
+
+        placementCheckWallSectionPlacementCollider.enabled = false;
+
+        canPlaceWall = Physics.OverlapBox(
+            placementColliderCenter,
+            placementColliderExtents,
+            placementColliderRotation,
+            blockingLayers)
+            .Length == 0;
+
+        placementCheckWallSectionPlacementCollider.enabled = true;
+    }
+
+    private void SetCurrentWallTransparency(Color color)
+    {
+        foreach (var renderer in placementCheckWallSectionRenderers)
+        {
+            var materials = renderer.materials;
+
+            foreach (var material in materials)
+            {
+                material.color = color;
+            }
+
+            renderer.materials = materials;
+        }
+    }
+
+    private void HandleLookingForWallPlacementLocation()
+    {
+        UpdateCurrentWallPosition();
+        CheckCurrentWallPlacementValidity();
+
+        if (couldPlaceWallLastFrame != canPlaceWall)
+        {
+            SetCurrentWallTransparency(canPlaceWall ? canBuildColor : cannotBuildColor);
+        }
+
+        couldPlaceWallLastFrame = canPlaceWall;
+    }
+
+    private void UpdateCurrentWallPosition()
+    {
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out var hit, Mathf.Infinity, groundLayers))
+        {
+            currentPlacementCheckWallSectionLocation = SnapToGrid(hit.point);
+            placementCheckWallSection.transform.position = currentPlacementCheckWallSectionLocation;
+
+            if(lastPlacementCheckWallSectionLocation != currentPlacementCheckWallSectionLocation)
+            {
+                var direction = (lastPlacementCheckWallSectionLocation - currentPlacementCheckWallSectionLocation).normalized;
+                placementCheckWallSection.transform.forward = direction;
+
+                lastPlacementCheckWallSectionLocation = currentPlacementCheckWallSectionLocation;
+            }
+        }
+    }
+
+    /* --------------------------------------------- */
+    /* -------- WALL PLACEMENT VIA DRAGING --------- */
+
+    public void StartWallPlacement()
+    {
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity, groundLayers))
+        {
+            if(placementCheckWallSection != null)
+            {
+                Destroy(placementCheckWallSection);
+            }
+
+            ClearCurrentWallData();
+
+            dragStartPosition = SnapToGrid(hit.point);
+
+            IsLookingForWallPlacementLocation = false;
+            IsPlacingWalls = true;
+        }
+    }
+
+    private Vector3 SnapToGrid(Vector3 position)
+    {
+        float snappedX = Mathf.Round(position.x / WallGridSize) * WallGridSize;
+        float snappedZ = Mathf.Round(position.z / WallGridSize) * WallGridSize;
+
+        return new Vector3(snappedX, position.y, snappedZ);
+    }
+
+    private void HandleWallPlacement()
+    {
+        UpdateDragEndPosition();
+
+        if(currentDragEndPosition == lastDragEndPosition)
+        {
+            return;
+        }
+
+        GetWallChainBetweenStartAndCurrentPosition();
+
+        CheckWallChainPlacementValidity();
+
+        if (canPlaceWalls != couldPlaceWallsLastFrame)
+        {
+            SetWallChainTransparency(canPlaceWalls ? canBuildColor : cannotBuildColor);
+        }
+
+        ClearNullsFromWallLists();
+
+        lastDragEndPosition = currentDragEndPosition;
+        couldPlaceWallsLastFrame = canPlaceWalls;
+    }
+
+    private void UpdateDragEndPosition()
+    {
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity, groundLayers))
+        {
+            currentDragEndPosition = SnapToGrid(hit.point);
+        }
+    }
+
+    private void GetWallChainBetweenStartAndCurrentPosition()
+    {
+        var direction = (currentDragEndPosition - dragStartPosition).normalized;
+        var distance = Vector3.Distance(dragStartPosition, currentDragEndPosition);
+
+        var neededWallSectionCount = Mathf.FloorToInt(distance / WallGridSize);
+        neededWallSectionCount = neededWallSectionCount == 0 ? 1 : neededWallSectionCount;
+        var currentWallSectionCount = walls.Count;
+
+        if (currentWallSectionCount < neededWallSectionCount)
+        {
+            for (int i = currentWallSectionCount; i <= neededWallSectionCount; i++)
+            {
+                var wall = Instantiate(wallSectionPrefab, dragStartPosition, Quaternion.identity);
+                walls.Add(wall);
+
+                var thisWallPlacementCollider = wall.transform.Find(PlacementTriggerGameObjectName).GetComponent<Collider>();
+                thisWallPlacementCollider.enabled = false;
+                wallPlacementColliders.Add(thisWallPlacementCollider);
+
+                var thisWallRenderers = wall.GetComponentsInChildren<Renderer>();
+                wallRenderers.AddRange(thisWallRenderers);
+
+                foreach (var renderer in thisWallRenderers)
+                {
+                    foreach (var material in renderer.materials)
+                    {
+                        wallOriginalMaterials.Add(new Material(material));
+
+                        material.color = couldPlaceWallsLastFrame ? canBuildColor : cannotBuildColor;
+                    }
+                }
+            }
+        }
+        else if (currentWallSectionCount > neededWallSectionCount)
+        {
+            for (int i = currentWallSectionCount - 1; i >= neededWallSectionCount; i--)
+            {
+                var wallSectionToBeDestroyed = walls[i];
+
+                walls.RemoveAt(i);
+
+                Destroy(wallSectionToBeDestroyed);
+            }
+        }
+
+        Debug.Log($"start pos: {dragStartPosition}, end pos: {currentDragEndPosition}, direction: {direction}, distance: {distance}, needed section count: {neededWallSectionCount}, current section count: {currentWallSectionCount}");
+
+        var positionIndex = 0;
+
+        foreach (var wall in walls)
+        {
+            var position = dragStartPosition + positionIndex * WallGridSize * direction;
+
+            wall.transform.position = position;
+            wall.transform.forward = direction;
+
+            positionIndex++;
+        }
+
+        lastDragEndPosition = currentDragEndPosition;
+    }
+
+    private void CheckWallChainPlacementValidity()
+    {
+        var canPlaceWallChain = true;
+
+        foreach(var wallPlacementCollider in wallPlacementColliders.Where(x => x != null))
+        {
+            if (!canPlaceWallChain)
+            {
+                break;
+            }
+
+            wallPlacementCollider.enabled = true;
+
+            var placementColliderCenter = wallPlacementCollider.bounds.center;
+            var placementColliderExtents = wallPlacementCollider.bounds.extents;
+            var placementColliderRotation = wallPlacementCollider.transform.rotation;
+
+            wallPlacementCollider.enabled = false;
+
+            var canPlaceWallSection = Physics.OverlapBox(
+                placementColliderCenter,
+                placementColliderExtents,
+                placementColliderRotation,
+                blockingLayers)
+                .Length == 0;
+
+            canPlaceWallChain = canPlaceWallSection && canPlaceWallChain;
+        }
+
+        canPlaceWalls = canPlaceWallChain;
+    }
+
+    private void SetWallChainTransparency(Color color)
+    {
+        foreach (var renderer in wallRenderers.Where(x => x != null))
+        {
+            var materials = renderer.materials;
+
+            for (int i = 0; i < materials.Length; i++)
+            {
+                materials[i].color = color;
+            }
+
+            renderer.materials = materials;
+        }
+    }
+
+    private void ClearNullsFromWallLists()
+    {
+        wallPlacementColliders.RemoveAll(x => x == null);
+
+        wallRenderers.RemoveAll(x => x == null);
+
+        wallOriginalMaterials.RemoveAll(x => x == null);
+    }
+
+    public void ConfirmWallChainPlacement()
+    {
+        if (walls.Count == 0
+            || !canPlaceWalls
+            || !SpendResourcesForWallChainPlacement())
+        {
+            CancelPlacement();
+        }
+
+        RestoreWallChainOriginalMaterials();
+
+        ReenableWallChainPlacementColliders();
+
+        ClearAllWallData();
+
+        ClearControllerData();
+    }
+
+    private bool SpendResourcesForWallChainPlacement()
+    {
+        var wallSectionCosts = wallSectionPrefab.GetComponent<BuildingBase>().Costs;
+        var totalCosts = new List<Cost>();
+
+        foreach (var cost in wallSectionCosts)
+        {
+            totalCosts.Add(new Cost
+            {
+                resourceType = cost.resourceType,
+                amount = cost.amount * walls.Count
+            });
+        }
+
+        return resourceController.SpendResources(totalCosts.ToArray());
+    }
+
+    private void RestoreWallChainOriginalMaterials()
+    {
+        foreach (var renderer in wallRenderers.Where(x => x != null))
+        {
+            var materials = renderer.materials;
+            int materialIndex = 0;
+
+            foreach (var material in materials)
+            {
+                material.CopyPropertiesFromMaterial(wallOriginalMaterials[materialIndex]);
+                materialIndex++;
+            }
+
+            renderer.materials = materials;
+        }
+    }
+
+    private void ReenableWallChainPlacementColliders()
+    {
+        foreach(var placementCollider in wallPlacementColliders.Where(x => x != null))
+        {
+            placementCollider.enabled = true;
+        }
+    }
+
+    private void ClearCurrentWallData()
+    {
+        placementCheckWallSection = null;
+        placementCheckWallSectionPlacementCollider = null;
+        placementCheckWallSectionRenderers.Clear();
+    }
+
+    private void ClearWallData()
+    {
+        walls.Clear();
+        wallPlacementColliders.Clear();
+        wallRenderers.Clear();
+        wallOriginalMaterials.Clear();
+    }
+
+    public void ClearAllWallData()
+    {
+        ClearCurrentWallData();
+        ClearWallData();
+    }
+
+    private void DestroyWallGameObjects()
+    {
+        if (placementCheckWallSection != null)
+        {
+            Destroy(placementCheckWallSection);
+        }
+
+        foreach(var wall in walls)
+        {
+            Destroy(wall);
         }
     }
 }

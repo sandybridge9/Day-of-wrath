@@ -63,6 +63,45 @@ public class MouseInputManager : MonoBehaviour
             return;
         }
 
+        if (buildingController.IsLookingForWallPlacementLocation)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                buildingController.StartWallPlacement();
+            }
+        }
+
+        if (buildingController.IsPlacingWalls)
+        {
+            if (Input.GetMouseButtonUp(0))
+            {
+                buildingController.ConfirmWallChainPlacement();
+            }
+
+            return;
+        }
+
+        //if (buildingController.IsLookingForWallPlacementLocation)
+        //{
+        //    if (Input.GetMouseButtonDown(0))
+        //    {
+        //        buildingController.StartWallPlacement();
+        //    }
+
+        //    //if (Input.GetMouseButton(0))
+        //    //{
+        //    //    buildingController.HandleWallPlacement();
+        //    //}
+
+        //    if (Input.GetMouseButtonUp(0))
+        //    {
+        //        buildingController.ConfirmWallPlacement();
+        //        ResetMousePositions();
+        //    }
+
+        //    return;
+        //}
+
         if (Input.GetMouseButtonDown(0))
         {
             leftClickStartPos = Input.mousePosition;
@@ -135,7 +174,7 @@ public class MouseInputManager : MonoBehaviour
                 return;
             }
 
-            if (buildingController != null && buildingController.IsPlacingBuilding)
+            if (buildingController != null && (buildingController.IsPlacingBuilding || buildingController.IsLookingForWallPlacementLocation || buildingController.IsPlacingWalls))
             {
                 buildingController.CancelPlacement();
             }
