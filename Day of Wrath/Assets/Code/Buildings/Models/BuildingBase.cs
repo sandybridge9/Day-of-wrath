@@ -11,6 +11,10 @@ public class BuildingBase : SelectableObject
     [SerializeField]
     private Team team = Team.Friendly;
 
+    public BuildingType BuildingType;
+
+    public BuildingType[] AllowedCollisionBuildingTypes;
+
     public override Team Team
     {
         get => team;

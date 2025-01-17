@@ -78,6 +78,8 @@ MonoBehaviour:
     amount: 100
   - resourceType: 0
     amount: 50
+  team: 0
+  BuildingType: 3
 --- !u!114 &1190942467543956316
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class BuildingPlacementController : MonoBehaviour
 {
+    // ---------- GENERAL -------------------
     [Header("Building Prefabs")]
     public GameObject townHallPrefab;
     public GameObject barracksPrefab;
@@ -18,7 +19,11 @@ public class BuildingPlacementController : MonoBehaviour
     public GameObject gatehousePrefab;
     public GameObject wallSectionPrefab;
 
-    private Dictionary<BuildingType, GameObject> buildingPrefabs;
+    private Dictionary<BuildingType, GameObject> buildingTypesAndPrefabs;
+
+    public float buildingRotationSpeed = GlobalSettings.Buildings.RotationSpeed;
+
+    public string PlacementTriggerGameObjectName = "PlacementTrigger";
 
     private LayerMask groundLayers;
     private LayerMask blockingLayers;
@@ -26,24 +31,23 @@ public class BuildingPlacementController : MonoBehaviour
     public Color canBuildColor = new(0, 1, 0, 0.5f);
     public Color cannotBuildColor = new(1, 0, 0, 0.5f);
 
-    public float buildingRotationSpeed = GlobalSettings.Buildings.RotationSpeed;
-
-    public string PlacementTriggerGameObjectName = "PlacementTrigger";
-
+    // --------- BUILDING RELATED -----------
     public bool IsPlacingBuilding { get; private set; } = false;
     private bool canPlaceBuilding = false;
     private bool couldPlaceBuildingLastFrame = false;
 
     private GameObject currentBuilding;
+    private BuildingBase currentBuildingBase;
     private List<Renderer> currentBuildingRenderers = new();
     private List<Material> currentBuildingOriginalMaterials = new();
     private List<Material> currentBuildingCurrentMaterials = new();
+    private List<BuildingType> currentBuildingAllowedCollisionBuildingTypes = new();
 
-    private Collider currentBuildingPlacementCollider;
+    private List<Collider> currentBuildingPlacementColliders;
 
     private ResourceController resourceController;
 
-    // ---------- WALL LOGIC --------------
+    // ---------- WALL RELATED --------------
     public bool IsLookingForWallPlacementLocation { get; private set; } = false;
     private bool canPlaceWall = false;
     private bool couldPlaceWallLastFrame = false;
@@ -53,6 +57,9 @@ public class BuildingPlacementController : MonoBehaviour
     private bool couldPlaceWallsLastFrame = false;
 
     private float WallGridSize = 0.85f;
+
+    private BuildingBase wallBuildingBase;
+    private List<BuildingType> wallAllowedCollisionBuildingTypes = new();
 
     private GameObject placementCheckWallSection;
     private Collider placementCheckWallSectionPlacementCollider;
@@ -77,7 +84,7 @@ public class BuildingPlacementController : MonoBehaviour
         groundLayers = LayerManager.GroundLayers;
         blockingLayers = LayerManager.BuildingBlockingLayers;
 
-        buildingPrefabs = new Dictionary<BuildingType, GameObject>
+        buildingTypesAndPrefabs = new Dictionary<BuildingType, GameObject>
         {
             { BuildingType.TownHall, townHallPrefab },
             { BuildingType.Barracks, barracksPrefab },
@@ -110,14 +117,16 @@ public class BuildingPlacementController : MonoBehaviour
         }
     }
 
+    /* ------ BUILDING PLACEMENT LOGIC ------ */
+
     public bool TryGetBuildingPrefab(BuildingType buildingType, out GameObject buildingPrefab)
     {
-        return buildingPrefabs.TryGetValue(buildingType, out buildingPrefab);
+        return buildingTypesAndPrefabs.TryGetValue(buildingType, out buildingPrefab);
     }
 
     public void StartBuildingPlacement(BuildingType buildingType)
     {
-        if (!buildingPrefabs.TryGetValue(buildingType, out var buildingPrefab))
+        if (!buildingTypesAndPrefabs.TryGetValue(buildingType, out var buildingPrefab))
         {
             Debug.LogError($"No prefab assigned for building type: {buildingType}");
             return;
@@ -141,7 +150,7 @@ public class BuildingPlacementController : MonoBehaviour
 
         currentBuilding = Instantiate(buildingPrefab);
 
-        currentBuildingPlacementCollider = currentBuilding.transform.Find(PlacementTriggerGameObjectName).GetComponent<Collider>();
+        currentBuildingPlacementColliders = currentBuilding.transform.Find(PlacementTriggerGameObjectName).GetComponents<Collider>().ToList();
 
         currentBuildingRenderers.AddRange(currentBuilding.GetComponents<Renderer>());
         currentBuildingRenderers.AddRange(currentBuilding.GetComponentsInChildren<Renderer>());
@@ -154,6 +163,9 @@ public class BuildingPlacementController : MonoBehaviour
                 currentBuildingCurrentMaterials.Add(material);
             }
         }
+
+        currentBuildingBase = currentBuilding.GetComponent<BuildingBase>();
+        currentBuildingAllowedCollisionBuildingTypes.AddRange(currentBuildingBase.AllowedCollisionBuildingTypes);
 
         CheckBuildingPlacementValidity();
 
@@ -225,8 +237,10 @@ public class BuildingPlacementController : MonoBehaviour
         currentBuildingOriginalMaterials.Clear();
         currentBuildingCurrentMaterials.Clear();
         currentBuildingRenderers.Clear();
+        currentBuildingAllowedCollisionBuildingTypes.Clear();
+        currentBuildingPlacementColliders.Clear();
+        currentBuildingBase = null;
         currentBuilding = null;
-        currentBuildingPlacementCollider = null;
     }
 
     private void ClearControllerData()
@@ -256,20 +270,48 @@ public class BuildingPlacementController : MonoBehaviour
 
     private void CheckBuildingPlacementValidity()
     {
-        var placementColliderCenter = currentBuildingPlacementCollider.bounds.center;
-        var placementColliderExtents = currentBuildingPlacementCollider.bounds.extents;
-        var placementColliderRotation = currentBuildingPlacementCollider.transform.rotation;
+        var buildingPlacementIsValid = true;
 
-        currentBuildingPlacementCollider.enabled = false;
+        foreach(var currentBuildingPlacementCollider in currentBuildingPlacementColliders)
+        {
+            if (!buildingPlacementIsValid)
+            {
+                break;
+            }
 
-        canPlaceBuilding = Physics.OverlapBox(
-            placementColliderCenter,
-            placementColliderExtents,
-            placementColliderRotation,
-            blockingLayers)
-            .Length == 0;
+            var placementColliderCenter = currentBuildingPlacementCollider.bounds.center;
+            var placementColliderExtents = currentBuildingPlacementCollider.bounds.extents;
+            var placementColliderRotation = currentBuildingPlacementCollider.transform.rotation;
 
-        currentBuildingPlacementCollider.enabled = true;
+            currentBuildingPlacementCollider.enabled = false;
+
+            var collidingObjectColliders = Physics.OverlapBox(
+                placementColliderCenter,
+                placementColliderExtents,
+                placementColliderRotation,
+                blockingLayers);
+
+            if (collidingObjectColliders.Length > 0)
+            {
+                foreach (var collider in collidingObjectColliders)
+                {
+                    if (!buildingPlacementIsValid)
+                    {
+                        break;
+                    }
+
+                    var collidingBuilding = collider.GetComponentInParent<BuildingBase>();
+
+                    buildingPlacementIsValid =
+                        collidingBuilding != null
+                        && currentBuildingAllowedCollisionBuildingTypes.Contains(collidingBuilding.BuildingType);
+                }
+            }
+
+            currentBuildingPlacementCollider.enabled = true;
+        }
+
+        canPlaceBuilding = buildingPlacementIsValid;
     }
 
     private void SetBuildingTransparency(Color color)
@@ -305,11 +347,12 @@ public class BuildingPlacementController : MonoBehaviour
         }
     }
 
+    /* --------------------------------------------- */
     /* ---- LOOKING FOR WALL PLACEMENT LOCATION ---- */
 
     public void StartLookingForWallPlacementLocation()
     {
-        if (!buildingPrefabs.TryGetValue(BuildingType.Walls, out var wallPrefab))
+        if (!buildingTypesAndPrefabs.TryGetValue(BuildingType.Walls, out var wallPrefab))
         {
             Debug.LogError($"No prefab assigned for building type: {BuildingType.Walls}");
             return;
@@ -338,6 +381,9 @@ public class BuildingPlacementController : MonoBehaviour
         placementCheckWallSectionRenderers.AddRange(placementCheckWallSection.GetComponents<Renderer>());
         placementCheckWallSectionRenderers.AddRange(placementCheckWallSection.GetComponentsInChildren<Renderer>());
 
+        wallBuildingBase = placementCheckWallSection.GetComponent<BuildingBase>();
+        wallAllowedCollisionBuildingTypes.AddRange(wallBuildingBase.AllowedCollisionBuildingTypes);
+
         foreach (var renderer in placementCheckWallSectionRenderers)
         {
             foreach (var material in renderer.materials)
@@ -359,12 +405,28 @@ public class BuildingPlacementController : MonoBehaviour
 
         placementCheckWallSectionPlacementCollider.enabled = false;
 
-        canPlaceWall = Physics.OverlapBox(
+        canPlaceWall = true;
+
+        var collidingObjectColliders = Physics.OverlapBox(
             placementColliderCenter,
             placementColliderExtents,
             placementColliderRotation,
-            blockingLayers)
-            .Length == 0;
+            blockingLayers);
+
+        if (collidingObjectColliders.Length > 0)
+        {
+            foreach (var collider in collidingObjectColliders)
+            {
+                if (!canPlaceWall)
+                {
+                    break;
+                }
+
+                var collidingBuilding = collider.GetComponentInParent<BuildingBase>();
+
+                canPlaceWall = collidingBuilding != null && wallAllowedCollisionBuildingTypes.Contains(collidingBuilding.BuildingType);
+            }
+        }
 
         placementCheckWallSectionPlacementCollider.enabled = true;
     }
@@ -559,12 +621,28 @@ public class BuildingPlacementController : MonoBehaviour
 
             wallPlacementCollider.enabled = false;
 
-            var canPlaceWallSection = Physics.OverlapBox(
+            var canPlaceWallSection = true;
+
+            var collidingObjectColliders = Physics.OverlapBox(
                 placementColliderCenter,
                 placementColliderExtents,
                 placementColliderRotation,
-                blockingLayers)
-                .Length == 0;
+                blockingLayers);
+
+            if(collidingObjectColliders.Length > 0)
+            {
+                foreach(var collider in collidingObjectColliders)
+                {
+                    if (!canPlaceWallSection)
+                    {
+                        break;
+                    }
+
+                    var collidingBuilding = collider.GetComponentInParent<BuildingBase>();
+
+                    canPlaceWallSection = collidingBuilding != null && wallAllowedCollisionBuildingTypes.Contains(collidingBuilding.BuildingType);
+                }
+            }
 
             canPlaceWallChain = canPlaceWallSection && canPlaceWallChain;
         }
@@ -665,6 +743,8 @@ public class BuildingPlacementController : MonoBehaviour
 
     private void ClearWallData()
     {
+        wallBuildingBase = null;
+        wallAllowedCollisionBuildingTypes.Clear();
         walls.Clear();
         wallPlacementColliders.Clear();
         wallRenderers.Clear();

@@ -19,6 +19,15 @@ public class TowerController : MonoBehaviour
 
     private void Start()
     {
+        if(projectilePrefab == null)
+        {
+            throw new MissingReferenceException("Projectile prefab has not been set.");
+        }
+        if (shootPoint == null)
+        {
+            throw new MissingReferenceException("Shoot point has not been set.");
+        }
+
         thisBuilding = GetComponent<BuildingBase>();
 
         StartCoroutine(AttackRoutine());
@@ -59,18 +68,20 @@ public class TowerController : MonoBehaviour
 
     private void AttackNearestEnemy()
     {
-        if (enemiesInRange.Count == 0) return;
+        if (enemiesInRange.Count == 0)
+        {
+            return;
+        }
 
         var nearestEnemy = GetNearestEnemy();
 
-        if (nearestEnemy != null && projectilePrefab != null && shootPoint != null)
+        if (nearestEnemy != null)
         {
-            // Get the enemy's head or chest position
-            Vector3 targetPosition = GetTargetPosition(nearestEnemy);
+            var targetPosition = GetTargetPosition(nearestEnemy);
 
-            // Instantiate and initialize the projectile
             var projectile = Instantiate(projectilePrefab, shootPoint.position, Quaternion.identity);
             var projectileScript = projectile.GetComponent<Projectile>();
+
             if (projectileScript != null)
             {
                 projectileScript.Initialize(targetPosition, projectileSpeed, projectileDamage);
@@ -81,11 +92,12 @@ public class TowerController : MonoBehaviour
     private UnitBase GetNearestEnemy()
     {
         UnitBase nearestEnemy = null;
-        float shortestDistance = Mathf.Infinity;
+        var shortestDistance = Mathf.Infinity;
 
         foreach (var enemy in enemiesInRange)
         {
-            float distance = Vector3.Distance(transform.position, enemy.transform.position);
+            var distance = Vector3.Distance(transform.position, enemy.transform.position);
+
             if (distance < shortestDistance)
             {
                 shortestDistance = distance;
@@ -99,13 +111,12 @@ public class TowerController : MonoBehaviour
     private Vector3 GetTargetPosition(UnitBase unit)
     {
         var enemyCollider = unit.GetComponent<Collider>();
+
         if (enemyCollider != null)
         {
-            // Aim at the center of the enemy collider (chest or head)
             return enemyCollider.bounds.center;
         }
 
-        // Fallback to the unit's transform position
         return unit.transform.position;
     }
 

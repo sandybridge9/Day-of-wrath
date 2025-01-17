@@ -28,13 +28,12 @@ public class KeyboardInputManager : MonoBehaviour
         HandleCameraRotationKey();
         HandleBuildingInputs();
         HandleMultiSelectKey();
-        HandleTroopTraining();
     }
 
     private void HandleCameraMovement()
     {
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
+        var horizontalInput = Input.GetAxis("Horizontal");
+        var verticalInput = Input.GetAxis("Vertical");
 
         if (horizontalInput != 0 || verticalInput != 0)
         {
@@ -77,14 +76,6 @@ public class KeyboardInputManager : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.R))
         {
             mainCameraController.AllowCameraRotation = false;
-        }
-    }
-
-    private void HandleTroopTraining()
-    {
-        if (Input.GetKeyDown(KeyCode.U))
-        {
-            buildingActionController.TryTrainUnit();
         }
     }
 }

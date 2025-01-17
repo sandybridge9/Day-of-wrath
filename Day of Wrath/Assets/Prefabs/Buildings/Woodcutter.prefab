@@ -129,6 +129,8 @@ MonoBehaviour:
   Costs:
   - resourceType: 1
     amount: 100
+  team: 0
+  BuildingType: 6
 --- !u!114 &8311305354810195853
 MonoBehaviour:
   m_ObjectHideFlags: 0

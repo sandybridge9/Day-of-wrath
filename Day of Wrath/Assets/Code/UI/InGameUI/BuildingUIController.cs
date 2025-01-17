@@ -15,8 +15,11 @@ public class BuildingUIController : MonoBehaviour
     public Button farmButton;
     public Button mineButton;
     public Button woodcutterButton;
+    public Button smallTowerButton;
     public Button mediumTowerButton;
+    public Button largeTowerButton;
     public Button wallsButton;
+    public Button gatehouseButton;
 
     [Header("UI Elements")]
     public TextMeshProUGUI costText;
@@ -35,8 +38,11 @@ public class BuildingUIController : MonoBehaviour
         farmButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Farm));
         mineButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Mine));
         woodcutterButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Woodcutter));
+        smallTowerButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.SmallTower));
         mediumTowerButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.MediumTower));
+        largeTowerButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.LargeTower));
         wallsButton.onClick.AddListener(() => OnWallsButtonClicked());
+        gatehouseButton.onClick.AddListener(() => OnBuildingButtonClicked(BuildingType.Gatehouse));
 
         AddHoverListeners(townHallButton, BuildingType.TownHall);
         AddHoverListeners(barracksButton, BuildingType.Barracks);
@@ -45,8 +51,11 @@ public class BuildingUIController : MonoBehaviour
         AddHoverListeners(farmButton, BuildingType.Farm);
         AddHoverListeners(mineButton, BuildingType.Mine);
         AddHoverListeners(woodcutterButton, BuildingType.Woodcutter);
+        AddHoverListeners(smallTowerButton, BuildingType.SmallTower);
         AddHoverListeners(mediumTowerButton, BuildingType.MediumTower);
+        AddHoverListeners(largeTowerButton, BuildingType.LargeTower);
         AddHoverListeners(wallsButton, BuildingType.Walls);
+        AddHoverListeners(gatehouseButton, BuildingType.Gatehouse);
     }
 
     private void OnBuildingButtonClicked(BuildingType buildingType)

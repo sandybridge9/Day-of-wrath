@@ -253,6 +253,8 @@ MonoBehaviour:
     amount: 50
   - resourceType: 2
     amount: 50
+  team: 0
+  BuildingType: 1
   SpawnPoint: {fileID: 82927767726101451}
 --- !u!114 &8141416706152909231
 MonoBehaviour:
