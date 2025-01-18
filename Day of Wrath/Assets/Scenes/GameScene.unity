@@ -3210,6 +3210,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2848210963750856249, guid: cec81b0c9aed536419b2be955df2e246, type: 3}
+      propertyPath: MaxZoomHeight
+      value: 18
+      objectReference: {fileID: 0}
     - target: {fileID: 4596445143273794070, guid: cec81b0c9aed536419b2be955df2e246, type: 3}
       propertyPath: m_LocalPosition.x
       value: -19.536293

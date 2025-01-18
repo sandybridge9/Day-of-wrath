@@ -32,10 +32,10 @@ public class KeyboardInputManager : MonoBehaviour
 
     private void HandleCameraMovement()
     {
-        var horizontalInput = Input.GetAxis("Horizontal");
-        var verticalInput = Input.GetAxis("Vertical");
+        var horizontalInput = Input.GetAxisRaw("Horizontal");
+        var verticalInput = Input.GetAxisRaw("Vertical");
 
-        if (horizontalInput != 0 || verticalInput != 0)
+        if (!Mathf.Approximately(horizontalInput, 0f) || !Mathf.Approximately(verticalInput, 0f))
         {
             mainCameraController.MoveCamera(horizontalInput, verticalInput);
         }
