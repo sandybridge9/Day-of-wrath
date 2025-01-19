@@ -78,6 +78,7 @@ MonoBehaviour:
     amount: 150
   team: 0
   BuildingType: 5
+  AllowedCollisionBuildingTypes: 
 --- !u!114 &-5718752977529991400
 MonoBehaviour:
   m_ObjectHideFlags: 0

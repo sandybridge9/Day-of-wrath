@@ -294,6 +294,36 @@ MonoBehaviour:
   startingStoneCapacity: 10000
   startingIronCapacity: 10000
   startingFoodCapacity: 10000
+--- !u!114 &64823495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 64823473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24d1e44aefe071a4aa84c7bc0d4432b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridWorldSize: {x: 50, y: 50}
+  nodeRadius: 0.1
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 128
+--- !u!114 &64823496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 64823473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb62cb700e623334fa7f6177dfcf06ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  grid: {fileID: 64823495}
 --- !u!1 &604416969
 GameObject:
   m_ObjectHideFlags: 0
@@ -2993,6 +3023,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1496831776976136731, guid: 6f0c13f7e32b8a14e93899f6cc4ce281, type: 3}
+      propertyPath: unitSpacing
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1496831776976136731, guid: 6f0c13f7e32b8a14e93899f6cc4ce281, type: 3}
       propertyPath: SpacingBetweenUnitsInGrid
       value: 1.5
       objectReference: {fileID: 0}
@@ -3087,6 +3121,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3402471310414019194, guid: 6f0c13f7e32b8a14e93899f6cc4ce281, type: 3}
       insertIndex: -1
       addedObject: {fileID: 64823485}
+    - targetCorrespondingSourceObject: {fileID: 3402471310414019194, guid: 6f0c13f7e32b8a14e93899f6cc4ce281, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 64823495}
+    - targetCorrespondingSourceObject: {fileID: 3402471310414019194, guid: 6f0c13f7e32b8a14e93899f6cc4ce281, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 64823496}
   m_SourcePrefab: {fileID: 100100000, guid: 6f0c13f7e32b8a14e93899f6cc4ce281, type: 3}
 --- !u!1001 &8022449308336034968
 PrefabInstance:
@@ -3155,7 +3195,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 666536433831865296, guid: 22c9b70c8ba98b14d9f34736fa918d3e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.02
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 666536433831865296, guid: 22c9b70c8ba98b14d9f34736fa918d3e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3163,7 +3203,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 666536433831865296, guid: 22c9b70c8ba98b14d9f34736fa918d3e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.01
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 666536433831865296, guid: 22c9b70c8ba98b14d9f34736fa918d3e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3220,7 +3260,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4596445143273794070, guid: cec81b0c9aed536419b2be955df2e246, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 9.8744135
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 4596445143273794070, guid: cec81b0c9aed536419b2be955df2e246, type: 3}
       propertyPath: m_LocalPosition.z

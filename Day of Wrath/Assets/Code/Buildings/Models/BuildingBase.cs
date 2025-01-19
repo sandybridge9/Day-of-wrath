@@ -35,7 +35,7 @@ public class BuildingBase : SelectableObject
 
     public virtual void OnBuildingDestroyed()
     {
-
+        UpdatePathfindingGridOnDestroy();
     }
 
     public void TakeDamage(float damage)
@@ -48,10 +48,27 @@ public class BuildingBase : SelectableObject
         }
     }
 
-    private void Destroy()
+    public void Destroy()
     {
         OnBuildingDestroyed();
 
         Destroy(gameObject);
+    }
+
+    private void UpdatePathfindingGridOnDestroy()
+    {
+        var pathfindingGrid = FindObjectOfType<PathfindingGrid>();
+        var buildingColliders = transform.Find("PlacementTrigger").GetComponents<Collider>();
+
+        foreach (var buildingCollider in buildingColliders)
+        {
+            var boxCollider = buildingCollider as BoxCollider;
+            if (boxCollider == null)
+            {
+                continue;
+            }
+
+            pathfindingGrid.UpdateNodesForBuilding(boxCollider, true);
+        }
     }
 }

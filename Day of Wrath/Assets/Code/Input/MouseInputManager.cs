@@ -75,32 +75,11 @@ public class MouseInputManager : MonoBehaviour
         {
             if (Input.GetMouseButtonUp(0))
             {
-                buildingController.ConfirmWallChainPlacement();
+                buildingController.PlaceWallChain();
             }
 
             return;
         }
-
-        //if (buildingController.IsLookingForWallPlacementLocation)
-        //{
-        //    if (Input.GetMouseButtonDown(0))
-        //    {
-        //        buildingController.StartWallPlacement();
-        //    }
-
-        //    //if (Input.GetMouseButton(0))
-        //    //{
-        //    //    buildingController.HandleWallPlacement();
-        //    //}
-
-        //    if (Input.GetMouseButtonUp(0))
-        //    {
-        //        buildingController.ConfirmWallPlacement();
-        //        ResetMousePositions();
-        //    }
-
-        //    return;
-        //}
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -182,7 +161,7 @@ public class MouseInputManager : MonoBehaviour
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-                if (Physics.Raycast(ray, out var hit1, Mathf.Infinity, attackableLayers))
+                /*if (Physics.Raycast(ray, out var hit1, Mathf.Infinity, attackableLayers))
                 {
                     if (hit1.collider.TryGetComponent<SelectableObject>(out var target))
                     {
@@ -202,7 +181,7 @@ public class MouseInputManager : MonoBehaviour
                         unitCommandController.IssueAttackCommand(target);
                     }
                 }
-                else if (Physics.Raycast(ray, out var hit2, Mathf.Infinity, walkableLayers))
+                else*/ if (Physics.Raycast(ray, out var hit2, Mathf.Infinity, walkableLayers))
                 {
                     Debug.Log($"Unit/units is selected and got orders to move to a location {hit2.point}");
                     unitCommandController.MoveSelectedUnits(hit2.point);

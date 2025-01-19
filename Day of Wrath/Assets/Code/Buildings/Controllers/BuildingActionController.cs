@@ -4,11 +4,13 @@ public class BuildingActionController : MonoBehaviour
 {
     private BarrackActionController barrackActionController;
     private SelectionController selectionController;
+    private PathfindingGrid pathfindingGrid;
 
     private void Start()
     {
         barrackActionController = GetComponent<BarrackActionController>();
         selectionController = GetComponent<SelectionController>();
+        pathfindingGrid = GetComponent<PathfindingGrid>();
     }
 
     public void TryTrainUnit()
@@ -26,10 +28,9 @@ public class BuildingActionController : MonoBehaviour
         {
             var building = selectionController.SelectedBuilding;
 
-            building.OnBuildingDestroyed();
             selectionController.ClearSelection();
 
-            Destroy(building.gameObject);
+            building.Destroy();
         }
     }
 }

@@ -4,64 +4,89 @@ using System.Collections.Generic;
 public class UnitCommandController : MonoBehaviour
 {
     private SelectionController selectionController;
+    private Pathfinding pathfinding;
 
-    private LayerMask groundLayers;
-    private LayerMask unitMovementObstacleLayers;
-
-    [Header("Unit Movement Position Calculation")]
-    public float clearanceRadius = 2f;
-    public float spacingBetweenUnitsInGrid = 1.5f;
-    public int maximumPositionFindAttempts = 50;
-    public float positionSearchRadiusPerAttempt = 4f;
+    [Header("Formation Settings")]
+    public float unitSpacing = 1f; // Spacing between units in the formation
 
     private void Start()
     {
-        groundLayers = LayerManager.GroundLayers;
-        unitMovementObstacleLayers = LayerManager.UnitMovementObstacleLayers;
-
         selectionController = GetComponent<SelectionController>();
+        pathfinding = FindObjectOfType<Pathfinding>();
     }
 
     public void MoveSelectedUnits(Vector3 targetPosition)
     {
-        var unitCount = selectionController.SelectedUnits.Count;
-        var gridPositions = CalculateGridPositions(targetPosition, unitCount);
-
-        for (int i = 0; i < unitCount; i++)
+        if (selectionController.SelectedUnits == null || selectionController.SelectedUnits.Count == 0)
         {
-            var unit = selectionController.SelectedUnits[i];
-            var unitController = unit.GetComponent<UnitController>();
+            Debug.LogWarning("No units selected to move.");
+            return;
+        }
 
-            if (unitController != null)
+        int unitCount = selectionController.SelectedUnits.Count;
+
+        // Get valid target node
+        Node targetNode = pathfinding.grid.NodeFromWorldPoint(targetPosition);
+        if (!targetNode.walkable)
+        {
+            Debug.LogWarning("Target position is not walkable.");
+            return;
+        }
+
+        // Group units by their starting nodes to minimize pathfinding calls
+        Dictionary<Node, List<GameObject>> unitsByNode = GroupUnitsByStartNode();
+
+        // Calculate formation positions
+        List<Vector3> formationPositions = CalculateFormationPositions(targetNode.worldPosition, unitCount);
+
+        // Assign paths
+        int formationIndex = 0;
+        foreach (var group in unitsByNode)
+        {
+            Node startNode = group.Key;
+            List<GameObject> units = group.Value;
+
+            // Calculate a shared path for the group
+            List<Vector3> sharedPath = pathfinding.FindPath(startNode.worldPosition, targetNode.worldPosition);
+
+            foreach (var unit in units)
             {
-                var clearPosition = FindClearPosition(gridPositions[i]);
-                unitController.SetMovementTargetPosition(clearPosition);
+                var unitController = unit.GetComponent<UnitController>();
+                if (unitController == null) continue;
+
+                // Ensure the unit ends at a valid formation position
+                Vector3 targetFormationPosition = GetValidFormationPosition(formationPositions, formationIndex++, targetNode);
+
+                // Adjust the path for the individual unit
+                List<Vector3> adjustedPath = AdjustPathForUnit(sharedPath, unit.transform.position, targetFormationPosition);
+                unitController.SetPath(adjustedPath);
             }
         }
     }
 
-    public void IssueAttackCommand(SelectableObject target)
+    private Dictionary<Node, List<GameObject>> GroupUnitsByStartNode()
     {
+        var groups = new Dictionary<Node, List<GameObject>>();
+
         foreach (var unit in selectionController.SelectedUnits)
         {
-            if (!target.IsFromDifferentTeam(unit.Team))
+            var startNode = pathfinding.grid.NodeFromWorldPoint(unit.transform.position);
+
+            if (!groups.ContainsKey(startNode))
             {
-                continue;
+                groups[startNode] = new List<GameObject>();
             }
 
-            var unitController = unit.GetComponent<UnitController>();
-
-            if (unitController != null)
-            {
-                unitController.SetAttackTarget(target);
-            }
+            groups[startNode].Add(unit.gameObject);
         }
+
+        return groups;
     }
 
-    public List<Vector3> CalculateGridPositions(Vector3 basePosition, int unitCount)
+    private List<Vector3> CalculateFormationPositions(Vector3 center, int unitCount)
     {
-        var positions = new List<Vector3>();
-        var gridSize = Mathf.CeilToInt(Mathf.Sqrt(unitCount));
+        List<Vector3> positions = new List<Vector3>();
+        int gridSize = Mathf.CeilToInt(Mathf.Sqrt(unitCount));
 
         for (int row = 0; row < gridSize; row++)
         {
@@ -69,39 +94,38 @@ public class UnitCommandController : MonoBehaviour
             {
                 if (positions.Count >= unitCount) break;
 
-                var offset = new Vector3(col * spacingBetweenUnitsInGrid, 0, row * spacingBetweenUnitsInGrid);
-                positions.Add(basePosition + offset);
+                Vector3 offset = new Vector3((col - gridSize / 2) * unitSpacing, 0, (row - gridSize / 2) * unitSpacing);
+                positions.Add(center + offset);
             }
         }
 
         return positions;
     }
 
-    private Vector3 FindClearPosition(Vector3 desiredPosition)
+    private Vector3 GetValidFormationPosition(List<Vector3> formationPositions, int index, Node targetNode)
     {
-        var position = desiredPosition;
+        Vector3 position = formationPositions[index];
+        Node node = pathfinding.grid.NodeFromWorldPoint(position);
 
-        for (int i = 0; i < maximumPositionFindAttempts; i++)
-        {
-            if (Physics.OverlapSphere(position, clearanceRadius, unitMovementObstacleLayers).Length == 0)
-            {
-                return position;
-            }
-
-            position += Random.insideUnitSphere * positionSearchRadiusPerAttempt;
-            position.y = desiredPosition.y;
-        }
-
-        return ClampToNearestValidPosition(desiredPosition);
+        // Ensure the position is walkable
+        return node.walkable ? node.worldPosition : targetNode.worldPosition;
     }
 
-    private Vector3 ClampToNearestValidPosition(Vector3 position)
+    private List<Vector3> AdjustPathForUnit(List<Vector3> sharedPath, Vector3 unitStartPosition, Vector3 targetFormationPosition)
     {
-        if (Physics.Raycast(position + Vector3.up * 10f, Vector3.down, out var hit, 20f, groundLayers))
+        List<Vector3> adjustedPath = new List<Vector3>();
+
+        foreach (var point in sharedPath)
         {
-            return hit.point;
+            Vector3 direction = (point - sharedPath[0]).normalized;
+            float distance = Vector3.Distance(sharedPath[0], point);
+            Vector3 adjustedPoint = unitStartPosition + direction * distance;
+
+            adjustedPath.Add(adjustedPoint);
         }
 
-        return position;
+        // Ensure the final position is the formation position
+        adjustedPath[adjustedPath.Count - 1] = targetFormationPosition;
+        return adjustedPath;
     }
 }

@@ -82,8 +82,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5.3763714, y: 2.7235966, z: 4.7595}
-  m_Center: {x: 0.0022563934, y: 1.2801433, z: -0.0055291653}
+  m_Size: {x: 5.3763714, y: 2.7235966, z: 4.737239}
+  m_Center: {x: 0.0022563934, y: 1.2801433, z: 0.005601287}
 --- !u!1 &7868291518484525106
 GameObject:
   m_ObjectHideFlags: 0
@@ -255,6 +255,7 @@ MonoBehaviour:
     amount: 50
   team: 0
   BuildingType: 1
+  AllowedCollisionBuildingTypes: 
   SpawnPoint: {fileID: 82927767726101451}
 --- !u!114 &8141416706152909231
 MonoBehaviour:

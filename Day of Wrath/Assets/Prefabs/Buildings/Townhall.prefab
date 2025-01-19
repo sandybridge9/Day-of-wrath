@@ -161,6 +161,9 @@ MonoBehaviour:
     amount: 10
   - resourceType: 1
     amount: 50
+  team: 0
+  BuildingType: 0
+  AllowedCollisionBuildingTypes: 
   SpawnPoint: {fileID: 7771786853977181057}
 --- !u!114 &6441263696073644112
 MonoBehaviour:

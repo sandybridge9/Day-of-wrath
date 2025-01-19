@@ -31,6 +31,9 @@ public class BuildingPlacementController : MonoBehaviour
     public Color canBuildColor = new(0, 1, 0, 0.5f);
     public Color cannotBuildColor = new(1, 0, 0, 0.5f);
 
+    private ResourceController resourceController;
+    private PathfindingGrid pathfindingGrid;
+
     // --------- BUILDING RELATED -----------
     public bool IsPlacingBuilding { get; private set; } = false;
     private bool canPlaceBuilding = false;
@@ -43,9 +46,7 @@ public class BuildingPlacementController : MonoBehaviour
     private List<Material> currentBuildingCurrentMaterials = new();
     private List<BuildingType> currentBuildingAllowedCollisionBuildingTypes = new();
 
-    private List<Collider> currentBuildingPlacementColliders;
-
-    private ResourceController resourceController;
+    private List<Collider> currentBuildingPlacementColliders = new();
 
     // ---------- WALL RELATED --------------
     public bool IsLookingForWallPlacementLocation { get; private set; } = false;
@@ -56,7 +57,7 @@ public class BuildingPlacementController : MonoBehaviour
     private bool canPlaceWalls = false;
     private bool couldPlaceWallsLastFrame = false;
 
-    private float WallGridSize = 0.85f;
+    private float WallGridSize = 0.8f;
 
     private BuildingBase wallBuildingBase;
     private List<BuildingType> wallAllowedCollisionBuildingTypes = new();
@@ -80,6 +81,7 @@ public class BuildingPlacementController : MonoBehaviour
     private void Start()
     {
         resourceController = GetComponent<ResourceController>();
+        pathfindingGrid = GetComponent<PathfindingGrid>();
 
         groundLayers = LayerManager.GroundLayers;
         blockingLayers = LayerManager.BuildingBlockingLayers;
@@ -188,6 +190,8 @@ public class BuildingPlacementController : MonoBehaviour
 
         RestoreOriginalMaterials();
 
+        UpdatePathfindingGridForBuilding();
+
         building.OnBuildingPlaced();
 
         ClearCurrentBuildingData();
@@ -272,23 +276,29 @@ public class BuildingPlacementController : MonoBehaviour
     {
         var buildingPlacementIsValid = true;
 
-        foreach(var currentBuildingPlacementCollider in currentBuildingPlacementColliders)
+        foreach (var currentBuildingPlacementCollider in currentBuildingPlacementColliders)
         {
             if (!buildingPlacementIsValid)
             {
                 break;
             }
 
-            var placementColliderCenter = currentBuildingPlacementCollider.bounds.center;
-            var placementColliderExtents = currentBuildingPlacementCollider.bounds.extents;
-            var placementColliderRotation = currentBuildingPlacementCollider.transform.rotation;
+            var boxCollider = currentBuildingPlacementCollider as BoxCollider;
+            if (boxCollider == null)
+            {
+                continue;
+            }
+
+            var boxCenter = boxCollider.transform.TransformPoint(boxCollider.center);
+            var boxSize = boxCollider.size / 2f;
+            var boxRotation = boxCollider.transform.rotation;
 
             currentBuildingPlacementCollider.enabled = false;
 
             var collidingObjectColliders = Physics.OverlapBox(
-                placementColliderCenter,
-                placementColliderExtents,
-                placementColliderRotation,
+                boxCenter,
+                boxSize,
+                boxRotation,
                 blockingLayers);
 
             if (collidingObjectColliders.Length > 0)
@@ -303,8 +313,8 @@ public class BuildingPlacementController : MonoBehaviour
                     var collidingBuilding = collider.GetComponentInParent<BuildingBase>();
 
                     buildingPlacementIsValid =
-                        collidingBuilding != null
-                        && currentBuildingAllowedCollisionBuildingTypes.Contains(collidingBuilding.BuildingType);
+                        collidingBuilding != null &&
+                        currentBuildingAllowedCollisionBuildingTypes.Contains(collidingBuilding.BuildingType);
                 }
             }
 
@@ -344,6 +354,23 @@ public class BuildingPlacementController : MonoBehaviour
             }
 
             renderer.materials = materials;
+        }
+    }
+
+    private void UpdatePathfindingGridForBuilding()
+    {
+        var pathfindingGrid = FindObjectOfType<PathfindingGrid>();
+
+        foreach (var currentBuildingPlacementCollider in currentBuildingPlacementColliders)
+        {
+            var boxCollider = currentBuildingPlacementCollider as BoxCollider;
+
+            if (boxCollider == null)
+            {
+                continue;
+            }
+
+            pathfindingGrid.UpdateNodesForBuilding(boxCollider, false);
         }
     }
 
@@ -601,50 +628,54 @@ public class BuildingPlacementController : MonoBehaviour
 
         lastDragEndPosition = currentDragEndPosition;
     }
-
+    
     private void CheckWallChainPlacementValidity()
     {
         var canPlaceWallChain = true;
 
-        foreach(var wallPlacementCollider in wallPlacementColliders.Where(x => x != null))
+        foreach (var wallPlacementCollider in wallPlacementColliders.Where(x => x != null))
         {
             if (!canPlaceWallChain)
             {
                 break;
             }
 
-            wallPlacementCollider.enabled = true;
+            var boxCollider = wallPlacementCollider as BoxCollider;
+            if (boxCollider == null)
+            {
+                continue;
+            }
 
-            var placementColliderCenter = wallPlacementCollider.bounds.center;
-            var placementColliderExtents = wallPlacementCollider.bounds.extents;
-            var placementColliderRotation = wallPlacementCollider.transform.rotation;
+            var boxCenter = boxCollider.transform.TransformPoint(boxCollider.center);
+            var boxSize = boxCollider.size / 2f;
+            var boxRotation = boxCollider.transform.rotation;
 
             wallPlacementCollider.enabled = false;
 
-            var canPlaceWallSection = true;
-
             var collidingObjectColliders = Physics.OverlapBox(
-                placementColliderCenter,
-                placementColliderExtents,
-                placementColliderRotation,
+                boxCenter,
+                boxSize,
+                boxRotation,
                 blockingLayers);
 
-            if(collidingObjectColliders.Length > 0)
+            if (collidingObjectColliders.Length > 0)
             {
-                foreach(var collider in collidingObjectColliders)
+                foreach (var collider in collidingObjectColliders)
                 {
-                    if (!canPlaceWallSection)
+                    if (!canPlaceWallChain)
                     {
                         break;
                     }
 
                     var collidingBuilding = collider.GetComponentInParent<BuildingBase>();
 
-                    canPlaceWallSection = collidingBuilding != null && wallAllowedCollisionBuildingTypes.Contains(collidingBuilding.BuildingType);
+                    canPlaceWallChain =
+                        collidingBuilding != null &&
+                        wallAllowedCollisionBuildingTypes.Contains(collidingBuilding.BuildingType);
                 }
             }
 
-            canPlaceWallChain = canPlaceWallSection && canPlaceWallChain;
+            wallPlacementCollider.enabled = true;
         }
 
         canPlaceWalls = canPlaceWallChain;
@@ -674,7 +705,7 @@ public class BuildingPlacementController : MonoBehaviour
         wallOriginalMaterials.RemoveAll(x => x == null);
     }
 
-    public void ConfirmWallChainPlacement()
+    public void PlaceWallChain()
     {
         if (walls.Count == 0
             || !canPlaceWalls
@@ -685,7 +716,7 @@ public class BuildingPlacementController : MonoBehaviour
 
         RestoreWallChainOriginalMaterials();
 
-        ReenableWallChainPlacementColliders();
+        ReenableWallChainPlacementCollidersAndUpdatePathfindingGrid();
 
         ClearAllWallData();
 
@@ -726,11 +757,22 @@ public class BuildingPlacementController : MonoBehaviour
         }
     }
 
-    private void ReenableWallChainPlacementColliders()
+    private void ReenableWallChainPlacementCollidersAndUpdatePathfindingGrid()
     {
-        foreach(var placementCollider in wallPlacementColliders.Where(x => x != null))
+        var pathfindingGrid = FindObjectOfType<PathfindingGrid>();
+
+        foreach (var placementCollider in wallPlacementColliders.Where(x => x != null))
         {
             placementCollider.enabled = true;
+
+            var boxCollider = placementCollider as BoxCollider;
+
+            if (boxCollider == null)
+            {
+                continue;
+            }
+
+            pathfindingGrid.UpdateNodesForBuilding(boxCollider, false);
         }
     }
 
@@ -769,4 +811,28 @@ public class BuildingPlacementController : MonoBehaviour
             Destroy(wall);
         }
     }
+
+    //private void OnDrawGizmos()
+    //{
+    //    if (currentBuildingPlacementColliders != null)
+    //    {
+    //        foreach (var collider in currentBuildingPlacementColliders)
+    //        {
+    //            Gizmos.color = Color.red;
+
+    //            var boxCollider = collider as BoxCollider;
+
+    //            if (boxCollider != null)
+    //            {
+    //                var matrix = Matrix4x4.TRS(
+    //                    boxCollider.transform.position,
+    //                    boxCollider.transform.rotation,
+    //                    Vector3.one);
+
+    //                Gizmos.matrix = matrix;
+    //                Gizmos.DrawWireCube(boxCollider.center, boxCollider.size);
+    //            }
+    //        }
+    //    }
+    //}
 }
