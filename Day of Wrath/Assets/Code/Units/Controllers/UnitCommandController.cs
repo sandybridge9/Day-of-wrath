@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class UnitCommandController : MonoBehaviour
@@ -6,8 +7,9 @@ public class UnitCommandController : MonoBehaviour
     private SelectionController selectionController;
     private Pathfinding pathfinding;
 
-    [Header("Formation Settings")]
-    public float unitSpacing = 1f; // Spacing between units in the formation
+    private float unitSpacing = 0.5f;
+    private float formationSpreadMultiplier = 1.5f;
+    private int framesBetweenUnitProcessing = 20;
 
     private void Start()
     {
@@ -23,109 +25,122 @@ public class UnitCommandController : MonoBehaviour
             return;
         }
 
-        int unitCount = selectionController.SelectedUnits.Count;
-
-        // Get valid target node
-        Node targetNode = pathfinding.grid.NodeFromWorldPoint(targetPosition);
+        var targetNode = pathfinding.grid.NodeFromWorldPoint(targetPosition);
         if (!targetNode.walkable)
         {
             Debug.LogWarning("Target position is not walkable.");
             return;
         }
 
-        // Group units by their starting nodes to minimize pathfinding calls
-        Dictionary<Node, List<GameObject>> unitsByNode = GroupUnitsByStartNode();
-
-        // Calculate formation positions
-        List<Vector3> formationPositions = CalculateFormationPositions(targetNode.worldPosition, unitCount);
-
-        // Assign paths
-        int formationIndex = 0;
-        foreach (var group in unitsByNode)
-        {
-            Node startNode = group.Key;
-            List<GameObject> units = group.Value;
-
-            // Calculate a shared path for the group
-            List<Vector3> sharedPath = pathfinding.FindPath(startNode.worldPosition, targetNode.worldPosition);
-
-            foreach (var unit in units)
-            {
-                var unitController = unit.GetComponent<UnitController>();
-                if (unitController == null) continue;
-
-                // Ensure the unit ends at a valid formation position
-                Vector3 targetFormationPosition = GetValidFormationPosition(formationPositions, formationIndex++, targetNode);
-
-                // Adjust the path for the individual unit
-                List<Vector3> adjustedPath = AdjustPathForUnit(sharedPath, unit.transform.position, targetFormationPosition);
-                unitController.SetPath(adjustedPath);
-            }
-        }
+        var selectedUnits = selectionController.SelectedUnits;
+        StartCoroutine(AssignPathsWithDelay(selectedUnits, targetNode));
     }
 
-    private Dictionary<Node, List<GameObject>> GroupUnitsByStartNode()
+    private List<Vector3> FindSquareFormationPositions(Vector3 center, int count)
     {
-        var groups = new Dictionary<Node, List<GameObject>>();
-
-        foreach (var unit in selectionController.SelectedUnits)
-        {
-            var startNode = pathfinding.grid.NodeFromWorldPoint(unit.transform.position);
-
-            if (!groups.ContainsKey(startNode))
-            {
-                groups[startNode] = new List<GameObject>();
-            }
-
-            groups[startNode].Add(unit.gameObject);
-        }
-
-        return groups;
-    }
-
-    private List<Vector3> CalculateFormationPositions(Vector3 center, int unitCount)
-    {
-        List<Vector3> positions = new List<Vector3>();
-        int gridSize = Mathf.CeilToInt(Mathf.Sqrt(unitCount));
+        var positions = new List<Vector3>();
+        var occupiedNodes = new HashSet<Node>();
+        var gridSize = Mathf.CeilToInt(Mathf.Sqrt(count));
 
         for (int row = 0; row < gridSize; row++)
         {
             for (int col = 0; col < gridSize; col++)
             {
-                if (positions.Count >= unitCount) break;
+                if (positions.Count >= count)
+                {
+                    break;
+                }
 
-                Vector3 offset = new Vector3((col - gridSize / 2) * unitSpacing, 0, (row - gridSize / 2) * unitSpacing);
-                positions.Add(center + offset);
+                var offset = new Vector3(
+                    (col - gridSize / 2) * unitSpacing * formationSpreadMultiplier,
+                    0,
+                    (row - gridSize / 2) * unitSpacing * formationSpreadMultiplier
+                );
+
+                var potentialPosition = center + offset;
+                var node = pathfinding.grid.NodeFromWorldPoint(potentialPosition);
+
+                if (node != null && node.walkable && !occupiedNodes.Contains(node))
+                {
+                    positions.Add(node.worldPosition);
+                    occupiedNodes.Add(node);
+                }
             }
         }
 
         return positions;
     }
 
-    private Vector3 GetValidFormationPosition(List<Vector3> formationPositions, int index, Node targetNode)
+    private Node FindClosestWalkableNode(Vector3 position)
     {
-        Vector3 position = formationPositions[index];
-        Node node = pathfinding.grid.NodeFromWorldPoint(position);
+        var startNode = pathfinding.grid.NodeFromWorldPoint(position);
 
-        // Ensure the position is walkable
-        return node.walkable ? node.worldPosition : targetNode.worldPosition;
-    }
-
-    private List<Vector3> AdjustPathForUnit(List<Vector3> sharedPath, Vector3 unitStartPosition, Vector3 targetFormationPosition)
-    {
-        List<Vector3> adjustedPath = new List<Vector3>();
-
-        foreach (var point in sharedPath)
+        if (startNode.walkable)
         {
-            Vector3 direction = (point - sharedPath[0]).normalized;
-            float distance = Vector3.Distance(sharedPath[0], point);
-            Vector3 adjustedPoint = unitStartPosition + direction * distance;
-
-            adjustedPath.Add(adjustedPoint);
+            return startNode;
         }
 
-        // Ensure the final position is the formation position
-        adjustedPath[adjustedPath.Count - 1] = targetFormationPosition;
-        return adjustedPath;
+        var nodesToCheck = new Queue<Node>();
+        var visitedNodes = new HashSet<Node>();
+        nodesToCheck.Enqueue(startNode);
+
+        while (nodesToCheck.Count > 0)
+        {
+            var currentNode = nodesToCheck.Dequeue();
+
+            if (currentNode.walkable)
+            {
+                return currentNode;
+            }
+
+            foreach (var neighbor in pathfinding.grid.GetNeighbors(currentNode))
+            {
+                if (!visitedNodes.Contains(neighbor))
+                {
+                    visitedNodes.Add(neighbor);
+                    nodesToCheck.Enqueue(neighbor);
+                }
+            }
+        }
+
+        Debug.LogWarning($"Could not find a walkable node near {position}. Using original position.");
+        return startNode;
+    }
+
+    private IEnumerator AssignPathsWithDelay(List<UnitBase> units, Node targetNode)
+    {
+        var formationPositions = FindSquareFormationPositions(targetNode.worldPosition, units.Count);
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            if (i >= formationPositions.Count)
+            {
+                break;
+            }
+
+            var unit = units[i];
+            var startPosition = unit.transform.position;
+            var startNode = FindClosestWalkableNode(startPosition);
+
+            var path = pathfinding.FindPath(startNode.worldPosition, targetNode.worldPosition);
+
+            if (path.Count > 0)
+            {
+                var formationPosition = formationPositions[i];
+                path[path.Count - 1] = formationPosition;
+
+                var unitController = unit.GetComponent<UnitController>();
+
+                if (unitController != null)
+                {
+                    unitController.SetPath(path);
+                }
+            }
+
+            for (int f = 0; f < framesBetweenUnitProcessing; f++)
+            {
+                yield return null;
+            }
+        }
     }
 }
