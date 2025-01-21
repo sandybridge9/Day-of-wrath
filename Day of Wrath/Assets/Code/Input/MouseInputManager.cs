@@ -161,13 +161,13 @@ public class MouseInputManager : MonoBehaviour
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-                /*if (Physics.Raycast(ray, out var hit1, Mathf.Infinity, attackableLayers))
+                if (Physics.Raycast(ray, out var hit1, Mathf.Infinity, attackableLayers))
                 {
                     if (hit1.collider.TryGetComponent<SelectableObject>(out var target))
                     {
                         Debug.Log($"Unit/units is selected and got orders to attack a {target}");
 
-                        unitCommandController.IssueAttackCommand(target);
+                        unitCommandController.AttackTarget(target);
 
                         return;
                     }
@@ -178,10 +178,10 @@ public class MouseInputManager : MonoBehaviour
                     {
                         Debug.Log($"Unit/units is selected and got orders to attack a {target}");
 
-                        unitCommandController.IssueAttackCommand(target);
+                        unitCommandController.AttackTarget(target);
                     }
                 }
-                else*/ if (Physics.Raycast(ray, out var hit2, Mathf.Infinity, walkableLayers))
+                else if (Physics.Raycast(ray, out var hit2, Mathf.Infinity, walkableLayers))
                 {
                     Debug.Log($"Unit/units is selected and got orders to move to a location {hit2.point}");
                     unitCommandController.MoveSelectedUnits(hit2.point);

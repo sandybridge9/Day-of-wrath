@@ -11,6 +11,13 @@ public class UnitController : MonoBehaviour
 
     private Pathfinding pathfinding;
 
+    [Header("Combat Settings")]
+    public float attackCooldown = 1f; // Time between attacks
+    private float lastAttackTime;
+
+    private SelectableObject currentTarget;
+    private Vector3 designatedAttackPosition;
+
     private void Start()
     {
         thisUnit = GetComponent<UnitBase>();
@@ -20,29 +27,52 @@ public class UnitController : MonoBehaviour
 
     private void Update()
     {
-        if (currentPath == null || currentPathIndex >= currentPath.Count)
+        if (currentTarget != null)
         {
-            return;
+            if (IsTargetDead())
+            {
+                StopAndClearTarget();
+
+                return;
+            }
+
+            if (currentTarget is BuildingBase && IsAtDesignatedPosition())
+            {
+                AttackTarget();
+            }
+            else if (IsWithinAttackRange())
+            {
+                AttackTarget();
+            }
+            else if (currentPath != null && currentPathIndex < currentPath.Count)
+            {
+                MoveAlongPath();
+            }
         }
-
-        var targetPosition = currentPath[currentPathIndex];
-
-        if (!IsTargetNodeWalkable(targetPosition))
+        else if (currentPath != null && currentPathIndex < currentPath.Count)
         {
-            RecalculatePath();
-            return;
-        }
+            var targetPosition = currentPath[currentPathIndex];
 
-        MoveTowards(targetPosition);
+            if (!IsTargetNodeWalkable(targetPosition))
+            {
+                RecalculatePath();
 
-        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
-        {
-            currentPathIndex++;
+                return;
+            }
+
+            MoveTowards(targetPosition);
+
+            if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+            {
+                currentPathIndex++;
+            }
         }
     }
 
     public void SetPath(List<Vector3> path)
     {
+        CancelCurrentAction();
+
         currentPath = path;
         currentPathIndex = 0;
     }
@@ -50,25 +80,37 @@ public class UnitController : MonoBehaviour
     private void MoveTowards(Vector3 targetPosition)
     {
         var direction = (targetPosition - transform.position).normalized;
-        transform.position += direction * movementSpeed * Time.deltaTime;
+
+        if (direction.magnitude > 0.1f)
+        {
+            var targetRotation = Quaternion.LookRotation(direction);
+
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+        }
+
+        transform.position += movementSpeed * Time.deltaTime * direction;
     }
 
     private bool IsTargetNodeWalkable(Vector3 position)
     {
         var node = pathfinding.grid.NodeFromWorldPoint(position);
+
         return node != null && node.walkable;
     }
 
     private void RecalculatePath()
     {
-        if (currentPath == null || currentPathIndex >= currentPath.Count) return;
+        if (currentPath == null || currentPathIndex >= currentPath.Count)
+        {
+            return;
+        }
 
         var currentTarget = currentPath[currentPath.Count - 1];
         var currentNode = pathfinding.grid.NodeFromWorldPoint(transform.position);
 
         if (currentNode != null)
         {
-            List<Vector3> newPath = pathfinding.FindPath(currentNode.worldPosition, currentTarget);
+            var newPath = pathfinding.FindPath(currentNode.worldPosition, currentTarget);
 
             if (newPath.Count > 0)
             {
@@ -83,13 +125,113 @@ public class UnitController : MonoBehaviour
             }
         }
     }
+
+    public void SetAttackTarget(SelectableObject target, List<Vector3> path, Vector3 attackPosition)
+    {
+        CancelCurrentAction();
+
+        currentTarget = target;
+        designatedAttackPosition = attackPosition;
+
+        currentPath = path;
+        currentPathIndex = 0;
+
+        Debug.Log(designatedAttackPosition);
+    }
+
+    private void MoveAlongPath()
+    {
+        var targetPosition = currentPath[currentPathIndex];
+        var direction = (targetPosition - transform.position).normalized;
+
+        if (direction.magnitude > 0.1f)
+        {
+            var targetRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+        }
+
+        transform.position += direction * movementSpeed * Time.deltaTime;
+
+        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+        {
+            currentPathIndex++;
+        }
+    }
+
+    private void AttackTarget()
+    {
+        if (currentTarget == null || Time.time - lastAttackTime < attackCooldown)
+        {
+            return;
+        }
+
+        lastAttackTime = Time.time;
+
+        if (currentTarget is UnitBase targetUnit)
+        {
+            targetUnit.TakeDamage(thisUnit.Damage);
+
+            if (targetUnit.Health <= 0)
+            {
+                StopAndClearTarget();
+            }
+        }
+        else if (currentTarget is BuildingBase targetBuilding)
+        {
+            targetBuilding.TakeDamage(thisUnit.Damage);
+
+            if (targetBuilding.Health <= 0)
+            {
+                StopAndClearTarget();
+            } 
+        }
+    }
+
+    private bool IsAtDesignatedPosition()
+    {
+        return Vector3.Distance(transform.position, designatedAttackPosition) <= 0.1f;
+    }
+
+    private bool IsWithinAttackRange()
+    {
+        if (currentTarget is BuildingBase)
+        {
+            return Vector3.Distance(transform.position, designatedAttackPosition) <= 0.1f;
+        }
+
+        return Vector3.Distance(transform.position, currentTarget.transform.position) <= thisUnit.AttackRange;
+    }
+
+    private bool IsTargetDead()
+    {
+        if (currentTarget is UnitBase unit && unit.Health <= 0)
+        {
+            return true;
+        }
+        if (currentTarget is BuildingBase building && building.Health <= 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private void StopAndClearTarget()
+    {
+        currentTarget = null;
+
+        currentPath = null;
+        currentPathIndex = 0;
+    }
+
+    private void CancelCurrentAction()
+    {
+        currentTarget = null;
+
+        currentPath = null;
+        currentPathIndex = 0;
+    }
 }
-
-
-
-
-
-
 
 //private Pathfinding pathfinding;
 //private List<Vector3> currentPath;
@@ -366,3 +508,200 @@ public class UnitController : MonoBehaviour
 //        isAttacking = false;
 //    }
 //}
+
+
+/*
+ * using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+public class UnitCommandController : MonoBehaviour
+{
+    private SelectionController selectionController;
+    private Pathfinding pathfinding;
+
+    private float unitSpacing = 0.5f;
+    private float formationSpreadMultiplier = 1.5f;
+    private int framesBetweenUnitProcessing = 20;
+
+    private void Start()
+    {
+        selectionController = GetComponent<SelectionController>();
+        pathfinding = FindObjectOfType<Pathfinding>();
+    }
+
+    public void MoveSelectedUnits(Vector3 targetPosition)
+    {
+        if (selectionController.SelectedUnits == null || selectionController.SelectedUnits.Count == 0)
+        {
+            Debug.LogWarning("No units selected to move.");
+            return;
+        }
+
+        var targetNode = pathfinding.grid.NodeFromWorldPoint(targetPosition);
+        if (!targetNode.walkable)
+        {
+            Debug.LogWarning("Target position is not walkable.");
+            return;
+        }
+
+        var selectedUnits = selectionController.SelectedUnits;
+        StartCoroutine(AssignPathsWithDelay(selectedUnits, targetNode));
+    }
+
+    private List<Vector3> FindSquareFormationPositions(Vector3 center, int count)
+    {
+        var positions = new List<Vector3>();
+        var occupiedNodes = new HashSet<Node>();
+        var gridSize = Mathf.CeilToInt(Mathf.Sqrt(count));
+
+        for (int row = 0; row < gridSize; row++)
+        {
+            for (int col = 0; col < gridSize; col++)
+            {
+                if (positions.Count >= count)
+                {
+                    break;
+                }
+
+                var offset = new Vector3(
+                    (col - gridSize / 2) * unitSpacing * formationSpreadMultiplier,
+                    0,
+                    (row - gridSize / 2) * unitSpacing * formationSpreadMultiplier
+                );
+
+                var potentialPosition = center + offset;
+                var node = pathfinding.grid.NodeFromWorldPoint(potentialPosition);
+
+                if (node != null && node.walkable && !occupiedNodes.Contains(node))
+                {
+                    positions.Add(node.worldPosition);
+                    occupiedNodes.Add(node);
+                }
+            }
+        }
+
+        return positions;
+    }
+
+    private Node FindClosestWalkableNode(Vector3 position)
+    {
+        var startNode = pathfinding.grid.NodeFromWorldPoint(position);
+
+        if (startNode.walkable)
+        {
+            return startNode;
+        }
+
+        var nodesToCheck = new Queue<Node>();
+        var visitedNodes = new HashSet<Node>();
+        nodesToCheck.Enqueue(startNode);
+
+        while (nodesToCheck.Count > 0)
+        {
+            var currentNode = nodesToCheck.Dequeue();
+
+            if (currentNode.walkable)
+            {
+                return currentNode;
+            }
+
+            foreach (var neighbor in pathfinding.grid.GetNeighbors(currentNode))
+            {
+                if (!visitedNodes.Contains(neighbor))
+                {
+                    visitedNodes.Add(neighbor);
+                    nodesToCheck.Enqueue(neighbor);
+                }
+            }
+        }
+
+        Debug.LogWarning($"Could not find a walkable node near {position}. Using original position.");
+        return startNode;
+    }
+
+    private IEnumerator AssignPathsWithDelay(List<UnitBase> units, Node targetNode)
+    {
+        var formationPositions = FindSquareFormationPositions(targetNode.worldPosition, units.Count);
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            if (i >= formationPositions.Count)
+            {
+                break;
+            }
+
+            var unit = units[i];
+            var startPosition = unit.transform.position;
+            var startNode = FindClosestWalkableNode(startPosition);
+
+            var path = pathfinding.FindPath(startNode.worldPosition, targetNode.worldPosition);
+
+            if (path.Count > 0)
+            {
+                var formationPosition = formationPositions[i];
+                path[path.Count - 1] = formationPosition;
+
+                var unitController = unit.GetComponent<UnitController>();
+
+                if (unitController != null)
+                {
+                    unitController.SetPath(path);
+                }
+            }
+
+            for (int f = 0; f < framesBetweenUnitProcessing; f++)
+            {
+                yield return null;
+            }
+        }
+    }
+}
+
+
+
+using System.Collections.Generic;
+using UnityEngine;
+
+public class UnitController : MonoBehaviour
+{
+    private UnitBase thisUnit;
+    private float movementSpeed;
+
+    private List<Vector3> currentPath;
+    private int currentPathIndex = 0;
+    //private bool
+
+    private void Start()
+    {
+        thisUnit = GetComponent<UnitBase>();
+
+        movementSpeed = thisUnit.MovementSpeed;
+    }
+
+    private void Update()
+    {
+        if (currentPath == null || currentPathIndex >= currentPath.Count) return;
+
+        Vector3 targetPosition = currentPath[currentPathIndex];
+        MoveTowards(targetPosition);
+
+        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+        {
+            currentPathIndex++;
+        }
+    }
+
+    public void SetPath(List<Vector3> path)
+    {
+        currentPath = path;
+        currentPathIndex = 0;
+    }
+
+    private void MoveTowards(Vector3 targetPosition)
+    {
+        Vector3 direction = (targetPosition - transform.position).normalized;
+        transform.position += direction * movementSpeed * Time.deltaTime;
+    }
+}
+ * */
