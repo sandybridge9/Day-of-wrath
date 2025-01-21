@@ -8,20 +8,31 @@ public class UnitController : MonoBehaviour
 
     private List<Vector3> currentPath;
     private int currentPathIndex = 0;
-    //private bool
+
+    private Pathfinding pathfinding;
 
     private void Start()
     {
         thisUnit = GetComponent<UnitBase>();
-
         movementSpeed = thisUnit.MovementSpeed;
+        pathfinding = FindObjectOfType<Pathfinding>();
     }
 
     private void Update()
     {
-        if (currentPath == null || currentPathIndex >= currentPath.Count) return;
+        if (currentPath == null || currentPathIndex >= currentPath.Count)
+        {
+            return;
+        }
 
-        Vector3 targetPosition = currentPath[currentPathIndex];
+        var targetPosition = currentPath[currentPathIndex];
+
+        if (!IsTargetNodeWalkable(targetPosition))
+        {
+            RecalculatePath();
+            return;
+        }
+
         MoveTowards(targetPosition);
 
         if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
@@ -38,10 +49,43 @@ public class UnitController : MonoBehaviour
 
     private void MoveTowards(Vector3 targetPosition)
     {
-        Vector3 direction = (targetPosition - transform.position).normalized;
+        var direction = (targetPosition - transform.position).normalized;
         transform.position += direction * movementSpeed * Time.deltaTime;
     }
+
+    private bool IsTargetNodeWalkable(Vector3 position)
+    {
+        var node = pathfinding.grid.NodeFromWorldPoint(position);
+        return node != null && node.walkable;
+    }
+
+    private void RecalculatePath()
+    {
+        if (currentPath == null || currentPathIndex >= currentPath.Count) return;
+
+        var currentTarget = currentPath[currentPath.Count - 1];
+        var currentNode = pathfinding.grid.NodeFromWorldPoint(transform.position);
+
+        if (currentNode != null)
+        {
+            List<Vector3> newPath = pathfinding.FindPath(currentNode.worldPosition, currentTarget);
+
+            if (newPath.Count > 0)
+            {
+                SetPath(newPath);
+            }
+            else
+            {
+                currentPath.Clear();
+                currentPathIndex = 0;
+
+                Debug.LogWarning($"Unit {gameObject.name} could not find a valid path to {currentTarget}, stopping.");
+            }
+        }
+    }
 }
+
+
 
 
 
