@@ -7,6 +7,8 @@ public static class GlobalSettings
         public const string UnitLayer = "Unit";
 
         public const string BuildingLayer = "Building";
+
+        public const string ResourceLayer = "Resource";
     }
 
     public static class MouseInput

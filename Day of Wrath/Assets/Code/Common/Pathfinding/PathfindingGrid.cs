@@ -5,7 +5,7 @@ public class PathfindingGrid : MonoBehaviour
 {
     public Vector2 gridWorldSize = new(50f, 50f);
     public float nodeRadius = 0.1f;
-    public LayerMask obstacleLayer;
+    private LayerMask obstacleLayer;
 
     private Node[,] grid;
     private float nodeDiameter;
@@ -13,6 +13,8 @@ public class PathfindingGrid : MonoBehaviour
 
     private void Start()
     {
+        obstacleLayer = LayerManager.PathfindingGridUnwalkableLayers;
+
         nodeDiameter = nodeRadius * 2;
         gridSizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
         gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);

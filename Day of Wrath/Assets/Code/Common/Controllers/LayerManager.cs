@@ -32,4 +32,12 @@ public static class LayerManager
         GlobalSettings.Layers.UnitLayer,
         GlobalSettings.Layers.BuildingLayer
     );
+
+    public static LayerMask PathfindingGridUnwalkableLayers => LayerMask.GetMask(
+        GlobalSettings.Layers.ResourceLayer,
+        GlobalSettings.Layers.BuildingLayer);
+
+    public static LayerMask ResourceSpawningBlockingLayers => LayerMask.GetMask(
+        GlobalSettings.Layers.ResourceLayer,
+        GlobalSettings.Layers.BuildingLayer);
 }
