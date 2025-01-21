@@ -3,15 +3,18 @@ using UnityEngine;
 
 public class UnitController : MonoBehaviour
 {
+    private UnitBase thisUnit;
+    private float movementSpeed;
+
     private List<Vector3> currentPath;
     private int currentPathIndex = 0;
+    //private bool
 
-    public float movementSpeed = 5f;
-
-    public void SetPath(List<Vector3> path)
+    private void Start()
     {
-        currentPath = path;
-        currentPathIndex = 0;
+        thisUnit = GetComponent<UnitBase>();
+
+        movementSpeed = thisUnit.MovementSpeed;
     }
 
     private void Update()
@@ -25,6 +28,12 @@ public class UnitController : MonoBehaviour
         {
             currentPathIndex++;
         }
+    }
+
+    public void SetPath(List<Vector3> path)
+    {
+        currentPath = path;
+        currentPathIndex = 0;
     }
 
     private void MoveTowards(Vector3 targetPosition)
