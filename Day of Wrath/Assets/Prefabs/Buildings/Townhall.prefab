@@ -155,7 +155,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12f6e13c8e743b64eadf6fd7b53f3465, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Health: 1000
+  Health: 500
   Costs:
   - resourceType: 0
     amount: 10

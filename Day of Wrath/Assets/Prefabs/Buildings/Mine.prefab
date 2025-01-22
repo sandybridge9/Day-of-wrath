@@ -72,7 +72,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1cbcda91755a3b84ab16cf76f3c99ba1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Health: 500
+  Health: 300
   Costs:
   - resourceType: 1
     amount: 150
