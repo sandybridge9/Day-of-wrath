@@ -28,6 +28,11 @@ public class BuildingActionController : MonoBehaviour
         {
             var building = selectionController.SelectedBuilding;
 
+            if(building.BuildingType == BuildingType.TownHall)
+            {
+                return;
+            }
+
             selectionController.ClearSelection();
 
             building.Destroy();

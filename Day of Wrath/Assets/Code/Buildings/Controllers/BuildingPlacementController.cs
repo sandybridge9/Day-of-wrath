@@ -27,6 +27,7 @@ public class BuildingPlacementController : MonoBehaviour
 
     private LayerMask groundLayers;
     private LayerMask blockingLayers;
+    private LayerMask resourceLayer;
 
     public Color canBuildColor = new(0, 1, 0, 0.5f);
     public Color cannotBuildColor = new(1, 0, 0, 0.5f);
@@ -35,6 +36,14 @@ public class BuildingPlacementController : MonoBehaviour
     private PathfindingGrid pathfindingGrid;
 
     // --------- BUILDING RELATED -----------
+    private bool? hasTownhall = null;
+
+    public bool HasTownhall
+    {
+        get => hasTownhall == null ? FindObjectOfType<TownhallBuilding>() != null : hasTownhall.Value;
+        set => hasTownhall = value;
+    }
+
     public bool IsPlacingBuilding { get; private set; } = false;
     private bool canPlaceBuilding = false;
     private bool couldPlaceBuildingLastFrame = false;
@@ -85,6 +94,7 @@ public class BuildingPlacementController : MonoBehaviour
 
         groundLayers = LayerManager.GroundLayers;
         blockingLayers = LayerManager.BuildingBlockingLayers;
+        resourceLayer = LayerManager.ResourceLayer;
 
         buildingTypesAndPrefabs = new Dictionary<BuildingType, GameObject>
         {
@@ -169,7 +179,15 @@ public class BuildingPlacementController : MonoBehaviour
         currentBuildingBase = currentBuilding.GetComponent<BuildingBase>();
         currentBuildingAllowedCollisionBuildingTypes.AddRange(currentBuildingBase.AllowedCollisionBuildingTypes);
 
-        CheckBuildingPlacementValidity();
+        if(currentBuildingBase.BuildingType == BuildingType.Woodcutter
+            || currentBuildingBase.BuildingType == BuildingType.Mine)
+        {
+            CheckResourceBuildingPlacementValidity(currentBuildingBase.BuildingType);
+        }
+        else
+        {
+            CheckBuildingPlacementValidity();
+        }
 
         SetBuildingTransparency(canPlaceBuilding ? canBuildColor : cannotBuildColor);
     }
@@ -226,7 +244,16 @@ public class BuildingPlacementController : MonoBehaviour
     private void HandleBuildingPlacement()
     {
         UpdateBuildingPosition();
-        CheckBuildingPlacementValidity();
+
+        if (currentBuildingBase.BuildingType == BuildingType.Woodcutter
+            || currentBuildingBase.BuildingType == BuildingType.Mine)
+        {
+            CheckResourceBuildingPlacementValidity(currentBuildingBase.BuildingType);
+        }
+        else
+        {
+            CheckBuildingPlacementValidity();
+        }
 
         if (couldPlaceBuildingLastFrame != canPlaceBuilding)
         {
@@ -322,6 +349,104 @@ public class BuildingPlacementController : MonoBehaviour
         }
 
         canPlaceBuilding = buildingPlacementIsValid;
+    }
+
+    private void CheckResourceBuildingPlacementValidity(BuildingType buildingType)
+    {
+        var buildingPlacementIsValid = true;
+        var hasNearbyResource = false;
+
+        foreach (var currentBuildingPlacementCollider in currentBuildingPlacementColliders)
+        {
+            if (!buildingPlacementIsValid)
+            {
+                break;
+            }
+
+            var boxCollider = currentBuildingPlacementCollider as BoxCollider;
+            if (boxCollider == null)
+            {
+                continue;
+            }
+
+            var boxCenter = boxCollider.transform.TransformPoint(boxCollider.center);
+            var boxSize = boxCollider.size / 2f;
+            var boxRotation = boxCollider.transform.rotation;
+
+            currentBuildingPlacementCollider.enabled = false;
+
+            var collidingObjectColliders = Physics.OverlapBox(
+                boxCenter,
+                boxSize,
+                boxRotation,
+                blockingLayers);
+
+            if (collidingObjectColliders.Length > 0)
+            {
+                foreach (var collider in collidingObjectColliders)
+                {
+                    if (!buildingPlacementIsValid)
+                    {
+                        break;
+                    }
+
+                    var collidingBuilding = collider.GetComponentInParent<BuildingBase>();
+
+                    buildingPlacementIsValid =
+                        collidingBuilding != null &&
+                        currentBuildingAllowedCollisionBuildingTypes.Contains(collidingBuilding.BuildingType);
+                }
+            }
+
+            if (!buildingPlacementIsValid)
+            {
+                currentBuildingPlacementCollider.enabled = true;
+
+                break;
+            }
+
+            var collidingResourceObjectColliders = Physics.OverlapSphere(boxCenter, 5f, resourceLayer);
+
+            var foundNearbyResource = false;
+
+            if (collidingResourceObjectColliders.Length == 0)
+            {
+                hasNearbyResource = foundNearbyResource;
+
+                currentBuildingPlacementCollider.enabled = true;
+
+                break;
+            }
+
+            foreach(var collidingResourceCollider in collidingResourceObjectColliders)
+            {
+                Debug.Log(collidingResourceCollider);
+                var colliderResource = collidingResourceCollider.GetComponentInParent<SpawnableResource>();
+                Debug.Log(colliderResource);
+
+                if (buildingType == BuildingType.Woodcutter
+                    && colliderResource.Type == ResourceType.Wood)
+                {
+                    foundNearbyResource = true;
+
+                    break;
+                }
+                else if (buildingType == BuildingType.Mine
+                    && colliderResource.Type == ResourceType.Stone)
+                {
+
+                    foundNearbyResource = true;
+
+                    break;
+                }
+            }
+
+            hasNearbyResource = foundNearbyResource;
+
+            currentBuildingPlacementCollider.enabled = true;
+        }
+
+        canPlaceBuilding = buildingPlacementIsValid && hasNearbyResource;
     }
 
     private void SetBuildingTransparency(Color color)

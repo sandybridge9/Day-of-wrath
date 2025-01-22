@@ -15,9 +15,12 @@ public static class LayerManager
 
     public static LayerMask BuildingLayer = LayerMask.GetMask(GlobalSettings.Layers.BuildingLayer);
 
+    public static LayerMask ResourceLayer = LayerMask.GetMask(GlobalSettings.Layers.ResourceLayer);
+
     public static LayerMask BuildingBlockingLayers => LayerMask.GetMask(
         GlobalSettings.Layers.UnitLayer,
-        GlobalSettings.Layers.BuildingLayer
+        GlobalSettings.Layers.BuildingLayer,
+        GlobalSettings.Layers.ResourceLayer
         //GlobalSettings.Layers.TerrainLayer
     );
 

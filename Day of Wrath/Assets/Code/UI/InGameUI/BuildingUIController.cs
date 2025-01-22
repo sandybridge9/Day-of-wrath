@@ -60,11 +60,26 @@ public class BuildingUIController : MonoBehaviour
 
     private void OnBuildingButtonClicked(BuildingType buildingType)
     {
+        if(buildingType == BuildingType.TownHall && buildingPlacementController.HasTownhall)
+        {
+            return;
+        }
+
+        if(!buildingPlacementController.HasTownhall && buildingType != BuildingType.TownHall)
+        {
+            return;
+        }
+
         buildingPlacementController.StartBuildingPlacement(buildingType);
     }
 
     private void OnWallsButtonClicked()
     {
+        if (!buildingPlacementController.HasTownhall)
+        {
+            return;
+        }
+
         buildingPlacementController.StartLookingForWallPlacementLocation();
     }
 
