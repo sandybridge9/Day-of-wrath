@@ -94,7 +94,7 @@ public class MouseInputManager : MonoBehaviour
                 isDragging = true;
             }
 
-            if (isDragging)
+            if (isDragging && !buildingController.IsPlacingWalls)
             {
                 if (!selectionController.IsBoxSelecting)
                 {
@@ -109,13 +109,16 @@ public class MouseInputManager : MonoBehaviour
 
         if (Input.GetMouseButtonUp(0))
         {
-            if (isDragging)
+            if (!buildingController.IsPlacingWalls)
             {
-                selectionController.FinishBoxSelection();
-            }
-            else
-            {
-                selectionController.PointSelect();
+                if (isDragging)
+                {
+                    selectionController.FinishBoxSelection();
+                }
+                else
+                {
+                    selectionController.PointSelect();
+                }
             }
 
             ResetMousePositions();
