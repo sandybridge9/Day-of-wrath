@@ -163,7 +163,7 @@ public class MouseInputManager : MonoBehaviour
 
                 if (Physics.Raycast(ray, out var hit1, Mathf.Infinity, attackableLayers))
                 {
-                    if (hit1.collider.TryGetComponent<SelectableObject>(out var target))
+                    if (hit1.collider.TryGetComponent<SelectableObject>(out var target) && target.IsFromDifferentTeam(Team.Friendly))
                     {
                         Debug.Log($"Unit/units is selected and got orders to attack a {target}");
 
@@ -174,7 +174,7 @@ public class MouseInputManager : MonoBehaviour
 
                     target = hit1.collider.gameObject.GetComponentInParent<SelectableObject>();
 
-                    if(target != null)
+                    if(target != null && target.IsFromDifferentTeam(Team.Friendly))
                     {
                         Debug.Log($"Unit/units is selected and got orders to attack a {target}");
 

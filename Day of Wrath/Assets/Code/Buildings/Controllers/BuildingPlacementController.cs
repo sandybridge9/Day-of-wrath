@@ -36,6 +36,7 @@ public class BuildingPlacementController : MonoBehaviour
     private PathfindingGrid pathfindingGrid;
 
     // --------- BUILDING RELATED -----------
+    public bool HasTownhallBeenBuilt = false;
     private bool? hasTownhall = null;
 
     public bool HasTownhall

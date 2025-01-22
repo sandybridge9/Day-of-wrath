@@ -10,6 +10,10 @@ public class UnitBase : SelectableObject
     [Header("Attack Properties")]
     public float Damage = 10f;
     public float AttackRange = 1f;
+    public float TemperRange = 15f;
+
+    [Header("Temperament")]
+    public Temper UnitTemper = Temper.Defensive;
 
     [Header("Cost")]
     public Cost[] Costs;
@@ -56,5 +60,11 @@ public class UnitBase : SelectableObject
         OnUnitDeath();
 
         Destroy(gameObject);
+    }
+
+    public void SetTemper(Temper newTemper)
+    {
+        UnitTemper = newTemper;
+        Debug.Log($"{gameObject.name} assigned Temper: {UnitTemper}");
     }
 }

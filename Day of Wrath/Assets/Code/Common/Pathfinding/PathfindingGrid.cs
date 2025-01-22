@@ -137,17 +137,17 @@ public class PathfindingGrid : MonoBehaviour
         //GenerateGrid(); // Regenerate the grid with the new radius
     }
 
-    private void OnDrawGizmos()
-    {
-        if (grid == null)
-        {
-            return;
-        }
+    //private void OnDrawGizmos()
+    //{
+    //    if (grid == null)
+    //    {
+    //        return;
+    //    }
 
-        foreach (Node node in grid)
-        {
-            Gizmos.color = node.walkable ? Color.white : Color.red;
-            Gizmos.DrawCube(node.worldPosition, Vector3.one * (nodeDiameter - 0.1f));
-        }
-    }
+    //    foreach (Node node in grid)
+    //    {
+    //        Gizmos.color = node.walkable ? Color.white : Color.red;
+    //        Gizmos.DrawCube(node.worldPosition, Vector3.one * (nodeDiameter - 0.1f));
+    //    }
+    //}
 }

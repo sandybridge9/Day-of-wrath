@@ -94,7 +94,9 @@ public class BarrackActionController : MonoBehaviour
         {
             //spawnPosition = AdjustPositionToGround(spawnPosition, troopPrefab);
 
-            Instantiate(troopPrefab, spawnPosition, Quaternion.identity);
+            GameObject unit = Instantiate(WarriorPrefab, spawnPosition, Quaternion.identity);
+            Temper randomTemper = (Random.Range(0, 2) == 0) ? Temper.Defensive : Temper.Aggressive;
+            unit.GetComponent<UnitBase>().SetTemper(randomTemper);
         }
     }
 
