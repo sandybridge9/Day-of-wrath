@@ -56,7 +56,7 @@ public class Pathfinding : MonoBehaviour
             }
         }
 
-        return new List<Vector3>(); // Return empty if no path
+        return new List<Vector3>();
     }
 
     private List<Vector3> RetracePath(Node startNode, Node endNode)

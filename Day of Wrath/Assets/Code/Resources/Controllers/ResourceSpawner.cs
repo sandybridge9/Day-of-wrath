@@ -42,36 +42,33 @@ public class ResourceSpawner : MonoBehaviour
 
     private void SpawnResourceClusters(GameObject prefab, int totalCount)
     {
-        int spawned = 0;
+        var spawned = 0;
 
         while (spawned < totalCount)
         {
-            // Choose a random cluster center
-            Vector3 clusterCenter = new Vector3(
+            var clusterCenter = new Vector3(
                 Random.Range(-mapSize.x / 2, mapSize.x / 2),
                 0,
                 Random.Range(-mapSize.y / 2, mapSize.y / 2)
             );
 
-            for (int i = 0; i < clusterSize && spawned < totalCount; i++)
+            for (var i = 0; i < clusterSize && spawned < totalCount; i++)
             {
-                Vector3 randomOffset = new Vector3(
+                var randomOffset = new Vector3(
                     Random.Range(-clusterRadius, clusterRadius),
                     0,
                     Random.Range(-clusterRadius, clusterRadius)
                 );
 
-                Vector3 spawnPosition = clusterCenter + randomOffset;
+                var spawnPosition = clusterCenter + randomOffset;
 
-                // Generate random scale and rotation
-                float randomScale = Random.Range(0.8f, 1.5f);
-                Quaternion randomRotation = RandomRotation();
+                var randomScale = Random.Range(0.8f, 1.5f);
+                var randomRotation = RandomRotation();
 
-                // Use the same scale and rotation for validity check and spawning
                 if (IsValidSpawnPosition(spawnPosition, prefab, randomScale, randomRotation))
                 {
-                    GameObject resource = Instantiate(prefab, spawnPosition, randomRotation);
-                    resource.transform.localScale = Vector3.one * randomScale; // Apply scale
+                    var resource = Instantiate(prefab, spawnPosition, randomRotation);
+                    resource.transform.localScale = Vector3.one * randomScale;
                     spawnedResources.Add(resource);
                     spawned++;
                 }
@@ -83,40 +80,40 @@ public class ResourceSpawner : MonoBehaviour
     {
         ClearResources();
 
-        int gridSize = Mathf.CeilToInt(Mathf.Sqrt(woodCount + rockCount));
-        float cellSize = Mathf.Min(mapSize.x / gridSize, mapSize.y / gridSize);
+        var gridSize = Mathf.CeilToInt(Mathf.Sqrt(woodCount + rockCount));
+        var cellSize = Mathf.Min(mapSize.x / gridSize, mapSize.y / gridSize);
 
-        int spawnedWoods = 0;
-        int spawnedRocks = 0;
+        var spawnedWoods = 0;
+        var spawnedRocks = 0;
 
-        for (int x = 0; x < gridSize; x++)
+        for (var x = 0; x < gridSize; x++)
         {
-            for (int z = 0; z < gridSize; z++)
+            for (var z = 0; z < gridSize; z++)
             {
-                // Stop if both resource limits are reached
-                if (spawnedWoods >= woodCount && spawnedRocks >= rockCount) return;
+                if (spawnedWoods >= woodCount && spawnedRocks >= rockCount)
+                {
+                    return;
+                }
 
-                Vector3 position = new Vector3(
+                var position = new Vector3(
                     -mapSize.x / 2 + x * cellSize + Random.Range(-cellSize / 2, cellSize / 2),
                     0,
                     -mapSize.y / 2 + z * cellSize + Random.Range(-cellSize / 2, cellSize / 2)
                 );
 
-                // Generate random scale and rotation
-                float randomScale = Random.Range(0.8f, 1.5f);
-                Quaternion randomRotation = RandomRotation();
+                var randomScale = Random.Range(0.8f, 1.5f);
+                var randomRotation = RandomRotation();
 
-                // Alternate between woods and rocks
                 if (spawnedWoods < woodCount && IsValidSpawnPosition(position, woodPrefab, randomScale, randomRotation))
                 {
-                    GameObject wood = Instantiate(woodPrefab, position, randomRotation);
+                    var wood = Instantiate(woodPrefab, position, randomRotation);
                     wood.transform.localScale = Vector3.one * randomScale;
                     spawnedResources.Add(wood);
                     spawnedWoods++;
                 }
                 else if (spawnedRocks < rockCount && IsValidSpawnPosition(position, rockPrefab, randomScale, randomRotation))
                 {
-                    GameObject rock = Instantiate(rockPrefab, position, randomRotation);
+                    var rock = Instantiate(rockPrefab, position, randomRotation);
                     rock.transform.localScale = Vector3.one * randomScale;
                     spawnedResources.Add(rock);
                     spawnedRocks++;
@@ -129,48 +126,49 @@ public class ResourceSpawner : MonoBehaviour
     {
         ClearResources();
 
-        Vector3 center = Vector3.zero; // Center point for radial distribution (e.g., the map's center)
-        float maxRadius = Mathf.Min(mapSize.x, mapSize.y) / 2;
-        int totalCount = woodCount + rockCount;
+        var center = Vector3.zero; // Center point for radial distribution (e.g., the map's center)
+        var maxRadius = Mathf.Min(mapSize.x, mapSize.y) / 2;
+        var totalCount = woodCount + rockCount;
 
-        // Divide resources into rings
-        int ringCount = Mathf.CeilToInt(Mathf.Sqrt(totalCount));
-        float ringSpacing = maxRadius / ringCount;
+        var ringCount = Mathf.CeilToInt(Mathf.Sqrt(totalCount));
+        var ringSpacing = maxRadius / ringCount;
 
-        int spawnedWoods = 0;
-        int spawnedRocks = 0;
+        var spawnedWoods = 0;
+        var spawnedRocks = 0;
 
         for (int ring = 1; ring <= ringCount; ring++)
         {
-            int resourcesInRing = Mathf.CeilToInt((float)totalCount / ringCount);
-            float radius = ring * ringSpacing;
+            var resourcesInRing = Mathf.CeilToInt((float)totalCount / ringCount);
+            var radius = ring * ringSpacing;
 
-            for (int i = 0; i < resourcesInRing; i++)
+            for (var i = 0; i < resourcesInRing; i++)
             {
-                if (spawnedWoods >= woodCount && spawnedRocks >= rockCount) return;
+                if (spawnedWoods >= woodCount && spawnedRocks >= rockCount)
+                {
+                    return;
+                }
 
-                // Calculate position on the ring
-                float angle = (360f / resourcesInRing) * i;
-                Vector3 position = center + new Vector3(
+                var angle = (360f / resourcesInRing) * i;
+
+                var position = center + new Vector3(
                     Mathf.Cos(angle * Mathf.Deg2Rad) * radius,
                     0,
                     Mathf.Sin(angle * Mathf.Deg2Rad) * radius
                 );
 
-                // Generate random scale and rotation
-                float randomScale = Random.Range(0.8f, 1.5f);
-                Quaternion randomRotation = RandomRotation();
+                var randomScale = Random.Range(0.8f, 1.5f);
+                var randomRotation = RandomRotation();
 
                 if (spawnedWoods < woodCount && IsValidSpawnPosition(position, woodPrefab, randomScale, randomRotation))
                 {
-                    GameObject wood = Instantiate(woodPrefab, position, randomRotation);
+                    var wood = Instantiate(woodPrefab, position, randomRotation);
                     wood.transform.localScale = Vector3.one * randomScale;
                     spawnedResources.Add(wood);
                     spawnedWoods++;
                 }
                 else if (spawnedRocks < rockCount && IsValidSpawnPosition(position, rockPrefab, randomScale, randomRotation))
                 {
-                    GameObject rock = Instantiate(rockPrefab, position, randomRotation);
+                    var rock = Instantiate(rockPrefab, position, randomRotation);
                     rock.transform.localScale = Vector3.one * randomScale;
                     spawnedResources.Add(rock);
                     spawnedRocks++;
@@ -181,20 +179,19 @@ public class ResourceSpawner : MonoBehaviour
 
     private bool IsValidSpawnPosition(Vector3 position, GameObject prefab, float scale, Quaternion rotation)
     {
-        BoxCollider prefabCollider = prefab.GetComponentInChildren<BoxCollider>();
+        var prefabCollider = prefab.GetComponentInChildren<BoxCollider>();
         if (prefabCollider == null)
         {
             Debug.LogWarning($"Prefab {prefab.name} is missing a BoxCollider.");
             return false;
         }
 
-        // Adjust for scale and rotation
-        Vector3 adjustedCenter = position + rotation * Vector3.Scale(prefabCollider.center, Vector3.one * scale);
-        Vector3 adjustedSize = Vector3.Scale(prefabCollider.size, Vector3.one * scale);
+        var adjustedCenter = position + rotation * Vector3.Scale(prefabCollider.center, Vector3.one * scale);
+        var adjustedSize = Vector3.Scale(prefabCollider.size, Vector3.one * scale);
 
-        Collider[] colliders = Physics.OverlapBox(
+        var colliders = Physics.OverlapBox(
             adjustedCenter,
-            adjustedSize / 2, // OverlapBox uses half-extents
+            adjustedSize / 2,
             rotation,
             blockingLayers
         );
@@ -209,7 +206,8 @@ public class ResourceSpawner : MonoBehaviour
 
     private void ApplyRandomScale(GameObject resource)
     {
-        float randomScale = Random.Range(0.8f, 1.5f); // Adjust scale range as needed
+        var randomScale = Random.Range(0.8f, 1.5f);
+
         resource.transform.localScale = new Vector3(randomScale, randomScale, randomScale);
     }
 }
