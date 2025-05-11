@@ -8,14 +8,27 @@ public class MapGeneratorUI : MonoBehaviour
     public Button mapGeneratorPerlinButton;
     public Button mapGeneratorSimplexButton;
     public Button flattenTerrainButton;
+    public Button generateUsingCheckboxesButton;
 
     public Slider widthSlider;
-    public Slider heightSlider;
+    public Slider lengthSlider;
     public Slider intensitySlider;
 
     public TextMeshProUGUI widthValueText;
-    public TextMeshProUGUI heightValueText;
+    public TextMeshProUGUI lengthValueText;
     public TextMeshProUGUI intensityValueText;
+
+    public Toggle perlinToggle;
+    public Toggle simplexToggle;
+    public Toggle hillToggle;
+    public Toggle valleyToggle;
+    public Toggle craterToggle;
+    public Toggle mountainToggle;
+
+    public Slider hillIntensitySlider;
+    public Slider valleyIntensitySlider;
+    public Slider craterIntensitySlider;
+    public Slider mountainIntensitySlider;
 
     [Header("Generator Reference")]
     public MapGenerator mapGenerator;
@@ -25,13 +38,14 @@ public class MapGeneratorUI : MonoBehaviour
         mapGeneratorPerlinButton.onClick.AddListener(GenerateMapUsingPerlinNoise);
         mapGeneratorSimplexButton.onClick.AddListener(GenerateMapUsingSimplexNoise);
         flattenTerrainButton.onClick.AddListener(FlattenTerrain);
+        generateUsingCheckboxesButton.onClick.AddListener(GenerateUsingCheckboxes);
 
         widthSlider.onValueChanged.AddListener(OnWidthChanged);
-        heightSlider.onValueChanged.AddListener(OnHeightChanged);
+        lengthSlider.onValueChanged.AddListener(OnHeightChanged);
         intensitySlider.onValueChanged.AddListener(OnIntensityChanged);
 
-        widthSlider.value = mapGenerator.width;
-        heightSlider.value = mapGenerator.height;
+        widthSlider.value = mapGenerator.terrainWidth;
+        lengthSlider.value = mapGenerator.terrainLength;
         intensitySlider.value = mapGenerator.heightMultiplier;
 
         UpdateLabels();
@@ -52,15 +66,31 @@ public class MapGeneratorUI : MonoBehaviour
         mapGenerator.FlattenTerrain();
     }
 
+    public void GenerateUsingCheckboxes()
+    {
+        mapGenerator.GenerateFromCheckboxes(
+            perlinToggle.isOn,
+            simplexToggle.isOn,
+            hillToggle.isOn,
+            valleyToggle.isOn,
+            craterToggle.isOn,
+            mountainToggle.isOn,
+            hillIntensitySlider.value,
+            valleyIntensitySlider.value,
+            craterIntensitySlider.value,
+            mountainIntensitySlider.value
+        );
+    }
+
     private void OnWidthChanged(float value)
     {
-        mapGenerator.width = Mathf.RoundToInt(value);
+        mapGenerator.terrainWidth = Mathf.RoundToInt(value);
         UpdateLabels();
     }
 
     private void OnHeightChanged(float value)
     {
-        mapGenerator.height = Mathf.RoundToInt(value);
+        mapGenerator.terrainLength = Mathf.RoundToInt(value);
         UpdateLabels();
     }
 
@@ -72,8 +102,8 @@ public class MapGeneratorUI : MonoBehaviour
 
     private void UpdateLabels()
     {
-        if (widthValueText != null) widthValueText.text = mapGenerator.width.ToString();
-        if (heightValueText != null) heightValueText.text = mapGenerator.height.ToString();
+        if (widthValueText != null) widthValueText.text = mapGenerator.terrainWidth.ToString();
+        if (lengthValueText != null) lengthValueText.text = mapGenerator.terrainLength.ToString();
         if (intensityValueText != null) intensityValueText.text = mapGenerator.heightMultiplier.ToString("F1");
     }
 }

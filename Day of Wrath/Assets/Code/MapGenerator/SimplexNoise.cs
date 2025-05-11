@@ -2,7 +2,7 @@ using UnityEngine;
 
 public static class SimplexNoise
 {
-    private static int[] perm = {
+    private static readonly int[] perm = {
         151,160,137,91,90,15,
         131,13,201,95,96,53,194,233,7,225,
         140,36,103,30,69,142,8,99,37,240,21,10,23,
@@ -21,7 +21,7 @@ public static class SimplexNoise
         199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,
         236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,
         61,156,180,
-        // repeat
+        // Repeat to prevent overflow
         151,160,137,91,90,15,
         131,13,201,95,96,53,194,233,7,225,
         140,36,103,30,69,142,8,99,37,240,21,10,23,
@@ -34,20 +34,14 @@ public static class SimplexNoise
         186, 3,64,52,217,226,250,124,123,5,202,38,147,118,126,255
     };
 
-    private static int FastFloor(float x)
-    {
-        return x > 0 ? (int)x : (int)x - 1;
-    }
-
-    private static float Dot(Vector2 g, float x, float y)
-    {
-        return g.x * x + g.y * y;
-    }
-
-    private static Vector2[] grad2 = {
+    private static readonly Vector2[] grad2 = {
         new Vector2(1,1), new Vector2(-1,1), new Vector2(1,-1), new Vector2(-1,-1),
         new Vector2(1,0), new Vector2(-1,0), new Vector2(0,1), new Vector2(0,-1)
     };
+
+    private static int FastFloor(float x) => x > 0 ? (int)x : (int)x - 1;
+
+    private static float Dot(Vector2 g, float x, float y) => g.x * x + g.y * y;
 
     public static float Noise(float xin, float yin)
     {
@@ -64,16 +58,8 @@ public static class SimplexNoise
         float y0 = yin - Y0;
 
         int i1, j1;
-        if (x0 > y0)
-        {
-            i1 = 1;
-            j1 = 0;
-        }
-        else
-        {
-            i1 = 0;
-            j1 = 1;
-        }
+        if (x0 > y0) { i1 = 1; j1 = 0; }
+        else { i1 = 0; j1 = 1; }
 
         float x1 = x0 - i1 + G2;
         float y1 = y0 - j1 + G2;
@@ -83,39 +69,25 @@ public static class SimplexNoise
         int ii = i & 255;
         int jj = j & 255;
 
-        Vector2 g0 = grad2[perm[ii + perm[jj]] % 8];
-        Vector2 g1 = grad2[perm[ii + i1 + perm[jj + j1]] % 8];
-        Vector2 g2 = grad2[perm[ii + 1 + perm[jj + 1]] % 8];
+        int gi0 = perm[(ii + perm[jj & 255]) & 255] % 8;
+        int gi1 = perm[(ii + i1 + perm[(jj + j1) & 255]) & 255] % 8;
+        int gi2 = perm[(ii + 1 + perm[(jj + 1) & 255]) & 255] % 8;
+
+        Vector2 g0 = grad2[gi0];
+        Vector2 g1 = grad2[gi1];
+        Vector2 g2 = grad2[gi2];
 
         float n0, n1, n2;
 
         float t0 = 0.5f - x0 * x0 - y0 * y0;
-        if (t0 < 0)
-            n0 = 0.0f;
-        else
-        {
-            t0 *= t0;
-            n0 = t0 * t0 * Dot(g0, x0, y0);
-        }
+        n0 = (t0 < 0) ? 0f : Mathf.Pow(t0, 4) * Dot(g0, x0, y0);
 
         float t1 = 0.5f - x1 * x1 - y1 * y1;
-        if (t1 < 0)
-            n1 = 0.0f;
-        else
-        {
-            t1 *= t1;
-            n1 = t1 * t1 * Dot(g1, x1, y1);
-        }
+        n1 = (t1 < 0) ? 0f : Mathf.Pow(t1, 4) * Dot(g1, x1, y1);
 
         float t2 = 0.5f - x2 * x2 - y2 * y2;
-        if (t2 < 0)
-            n2 = 0.0f;
-        else
-        {
-            t2 *= t2;
-            n2 = t2 * t2 * Dot(g2, x2, y2);
-        }
+        n2 = (t2 < 0) ? 0f : Mathf.Pow(t2, 4) * Dot(g2, x2, y2);
 
-        return 70.0f * (n0 + n1 + n2);
+        return 70f * (n0 + n1 + n2);
     }
 }
