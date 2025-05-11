@@ -94,15 +94,14 @@ public class MapGenerator : MonoBehaviour
         float offsetX = Random.Range(0f, 9999f);
         float offsetY = Random.Range(0f, 9999f);
 
-        // Randomized positions for features
         Vector2 hillCenter = new Vector2(Random.Range(resolution * 0.2f, resolution * 0.8f), Random.Range(resolution * 0.2f, resolution * 0.8f));
-        float hillRadius = Random.Range(resolution * 0.2f, resolution * 0.35f);
+        float hillRadius = Random.Range(resolution * 0.25f, resolution * 0.35f);
 
         Vector2 valleyCenter = new Vector2(Random.Range(resolution * 0.2f, resolution * 0.8f), Random.Range(resolution * 0.2f, resolution * 0.8f));
-        float valleyRadius = Random.Range(resolution * 0.2f, resolution * 0.35f);
+        float valleyRadius = Random.Range(resolution * 0.25f, resolution * 0.35f);
 
         Vector2 craterCenter = new Vector2(Random.Range(resolution * 0.2f, resolution * 0.8f), Random.Range(resolution * 0.2f, resolution * 0.8f));
-        float craterRadius = Random.Range(resolution * 0.2f, resolution * 0.35f);
+        float craterRadius = Random.Range(resolution * 0.25f, resolution * 0.35f);
 
         float ridgeAngle = Random.Range(0f, Mathf.PI);
 
@@ -110,65 +109,73 @@ public class MapGenerator : MonoBehaviour
         {
             for (int y = 0; y < resolution; y++)
             {
-                float height = 0f;
                 float nx = (float)x / resolution;
                 float ny = (float)y / resolution;
+                Vector2 pos = new Vector2(x, y);
 
-                // Base noise
                 float noise = 1f;
                 if (usePerlin)
-                    noise = Mathf.PerlinNoise(x * 0.05f + offsetX, y * 0.05f + offsetY);
+                    noise = Mathf.PerlinNoise(x * 0.03f + offsetX, y * 0.03f + offsetY);
                 else if (useSimplex)
-                    noise = (SimplexNoise.Noise(x * 0.05f + offsetX, y * 0.05f + offsetY) + 1f) / 2f;
+                    noise = (SimplexNoise.Noise(x * 0.03f + offsetX, y * 0.03f + offsetY) + 1f) / 2f;
 
-                Vector2 pos = new Vector2(x, y);
+                float height = 0f;
+                float blendSum = 0f;
 
                 // Hill
                 if (hill)
                 {
                     float dist = Vector2.Distance(pos, hillCenter);
-                    float normDist = Mathf.Clamp01(dist / hillRadius);
-                    float shape = 1f - normDist;
-                    height += hillIntensity * shape * shape * noise;
+                    float shape = Mathf.Clamp01(1f - dist / hillRadius);
+                    shape = Mathf.Pow(shape, 2.5f); // steeper
+                    height += shape * hillIntensity * noise;
+                    blendSum += shape;
                 }
 
                 // Valley
                 if (valley)
                 {
                     float dist = Vector2.Distance(pos, valleyCenter);
-                    float normDist = Mathf.Clamp01(dist / valleyRadius);
-                    float shape = normDist;
-                    height += valleyIntensity * shape * shape * noise;
+                    float shape = Mathf.Clamp01(1f - dist / valleyRadius);
+                    shape = Mathf.Pow(shape, 2.5f);
+                    height -= shape * valleyIntensity * noise;
+                    blendSum += shape;
                 }
 
                 // Crater
                 if (crater)
                 {
                     float dist = Vector2.Distance(pos, craterCenter);
-                    float normDist = Mathf.Clamp01(dist / craterRadius);
-                    float shape = normDist * normDist;
-                    height += craterIntensity * shape * noise;
+                    float shape = Mathf.Clamp01(1f - dist / craterRadius);
+                    shape = Mathf.Pow(shape, 2.0f);
+                    float ring = Mathf.Abs(Mathf.Sin(dist / craterRadius * Mathf.PI));
+                    height -= ring * craterIntensity * noise;
+                    blendSum += shape;
                 }
 
-                // Mountains
+                // Mountain Ridge
                 if (mountains)
                 {
                     float projection = nx * Mathf.Cos(ridgeAngle) + ny * Mathf.Sin(ridgeAngle);
                     float ridge = Mathf.Sin(projection * 10f);
-                    float fade = 1f - Mathf.Abs(ny - 0.5f) * 2f;
-                    height += mountainIntensity * Mathf.Clamp01(ridge * fade * noise);
+                    float fade = Mathf.Clamp01(1f - Mathf.Abs(ny - 0.5f) * 2f);
+                    float shape = Mathf.Pow(Mathf.Clamp01(ridge), 2.5f) * fade;
+                    height += shape * mountainIntensity * noise;
+                    blendSum += shape;
                 }
 
-                // Final clamping/normalization
-                if (height > 1f)
-                    height /= 1.5f;
+                // Normalize blend
+                if (blendSum > 1f)
+                    height /= blendSum;
 
-                heights[x, y] = Mathf.Clamp01(height);
+                heights[x, y] = Mathf.Clamp01(0.5f + height); // baseline at 0.5
             }
         }
 
         ApplyHeights(heights);
     }
+
+
 
     private void ApplyHeights(float[,] heights)
     {
