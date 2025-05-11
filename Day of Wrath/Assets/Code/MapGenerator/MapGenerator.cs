@@ -94,7 +94,7 @@ public class MapGenerator : MonoBehaviour
         float offsetX = Random.Range(0f, 9999f);
         float offsetY = Random.Range(0f, 9999f);
 
-        // Each feature gets its own center and radius
+        // Randomized positions for features
         Vector2 hillCenter = new Vector2(Random.Range(resolution * 0.2f, resolution * 0.8f), Random.Range(resolution * 0.2f, resolution * 0.8f));
         float hillRadius = Random.Range(resolution * 0.2f, resolution * 0.35f);
 
@@ -114,7 +114,7 @@ public class MapGenerator : MonoBehaviour
                 float nx = (float)x / resolution;
                 float ny = (float)y / resolution;
 
-                // Noise
+                // Base noise
                 float noise = 1f;
                 if (usePerlin)
                     noise = Mathf.PerlinNoise(x * 0.05f + offsetX, y * 0.05f + offsetY);
@@ -123,6 +123,7 @@ public class MapGenerator : MonoBehaviour
 
                 Vector2 pos = new Vector2(x, y);
 
+                // Hill
                 if (hill)
                 {
                     float dist = Vector2.Distance(pos, hillCenter);
@@ -131,6 +132,7 @@ public class MapGenerator : MonoBehaviour
                     height += hillIntensity * shape * shape * noise;
                 }
 
+                // Valley
                 if (valley)
                 {
                     float dist = Vector2.Distance(pos, valleyCenter);
@@ -139,14 +141,16 @@ public class MapGenerator : MonoBehaviour
                     height += valleyIntensity * shape * shape * noise;
                 }
 
+                // Crater
                 if (crater)
                 {
                     float dist = Vector2.Distance(pos, craterCenter);
                     float normDist = Mathf.Clamp01(dist / craterRadius);
-                    float bowl = normDist * normDist;
-                    height += craterIntensity * bowl * noise;
+                    float shape = normDist * normDist;
+                    height += craterIntensity * shape * noise;
                 }
 
+                // Mountains
                 if (mountains)
                 {
                     float projection = nx * Mathf.Cos(ridgeAngle) + ny * Mathf.Sin(ridgeAngle);
@@ -154,6 +158,10 @@ public class MapGenerator : MonoBehaviour
                     float fade = 1f - Mathf.Abs(ny - 0.5f) * 2f;
                     height += mountainIntensity * Mathf.Clamp01(ridge * fade * noise);
                 }
+
+                // Final clamping/normalization
+                if (height > 1f)
+                    height /= 1.5f;
 
                 heights[x, y] = Mathf.Clamp01(height);
             }
