@@ -8,14 +8,16 @@ public class ResourceSpawner : MonoBehaviour
     public GameObject rockPrefab;
 
     [Header("Spawn Settings")]
-    public Vector2 mapSize = new Vector2(100, 100);
+    public Vector2 mapSize = new Vector2(500, 500);
     public int defaultWoodCount = 20;
     public int defaultRockCount = 20;
     public float clusterRadius = 5f;
     public int clusterSize = 5;
 
-    private LayerMask blockingLayers;
+    [Header("Terrain Reference")]
+    public Terrain terrain;
 
+    private LayerMask blockingLayers;
     private List<GameObject> spawnedResources = new List<GameObject>();
 
     private void Start()
@@ -37,6 +39,7 @@ public class ResourceSpawner : MonoBehaviour
         {
             Destroy(resource);
         }
+
         spawnedResources.Clear();
     }
 
@@ -61,8 +64,9 @@ public class ResourceSpawner : MonoBehaviour
                 );
 
                 var spawnPosition = clusterCenter + randomOffset;
+                spawnPosition.y = terrain.SampleHeight(spawnPosition) + terrain.transform.position.y;
 
-                var randomScale = Random.Range(0.8f, 1.5f);
+                var randomScale = Random.Range(0.8f, 3f);
                 var randomRotation = RandomRotation();
 
                 if (IsValidSpawnPosition(spawnPosition, prefab, randomScale, randomRotation))
@@ -101,7 +105,9 @@ public class ResourceSpawner : MonoBehaviour
                     -mapSize.y / 2 + z * cellSize + Random.Range(-cellSize / 2, cellSize / 2)
                 );
 
-                var randomScale = Random.Range(0.8f, 1.5f);
+                position.y = terrain.SampleHeight(position) + terrain.transform.position.y;
+
+                var randomScale = Random.Range(0.8f, 3f);
                 var randomRotation = RandomRotation();
 
                 if (spawnedWoods < woodCount && IsValidSpawnPosition(position, woodPrefab, randomScale, randomRotation))
@@ -156,7 +162,9 @@ public class ResourceSpawner : MonoBehaviour
                     Mathf.Sin(angle * Mathf.Deg2Rad) * radius
                 );
 
-                var randomScale = Random.Range(0.8f, 1.5f);
+                position.y = terrain.SampleHeight(position) + terrain.transform.position.y;
+
+                var randomScale = Random.Range(0.8f, 3f);
                 var randomRotation = RandomRotation();
 
                 if (spawnedWoods < woodCount && IsValidSpawnPosition(position, woodPrefab, randomScale, randomRotation))
@@ -202,12 +210,5 @@ public class ResourceSpawner : MonoBehaviour
     private Quaternion RandomRotation()
     {
         return Quaternion.Euler(0, Random.Range(0f, 360f), 0);
-    }
-
-    private void ApplyRandomScale(GameObject resource)
-    {
-        var randomScale = Random.Range(0.8f, 1.5f);
-
-        resource.transform.localScale = new Vector3(randomScale, randomScale, randomScale);
     }
 }
