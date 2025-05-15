@@ -62,7 +62,7 @@ public class MapGeneratorTestUI : MonoBehaviour
 
         var resourceCount = resourceSpawner.spawnedResources.Count;
 
-        UnityEngine.Debug.Log($"Map generation time: {mapGenerationTime}; Resource generation time: {resourceSpawnerTime}. Generated resource count: {resourceCount}.");
+        UnityEngine.Debug.Log($"[Perlin][Clusters] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Generated resource count: {resourceCount}.");
     }
 
     private void GeneratePerlinGrid()
@@ -82,7 +82,7 @@ public class MapGeneratorTestUI : MonoBehaviour
 
         var resourceCount = resourceSpawner.spawnedResources.Count;
 
-        UnityEngine.Debug.Log($"Map generation time: {mapGenerationTime}; Resource generation time: {resourceSpawnerTime}. Generated resource count: {resourceCount}.");
+        UnityEngine.Debug.Log($"[Perlin][Grid] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Generated resource count: {resourceCount}.");
     }
 
     private void GeneratePerlinRadial()
@@ -96,13 +96,13 @@ public class MapGeneratorTestUI : MonoBehaviour
         stopwatch.Reset();
 
         stopwatch.Start();
-        resourceSpawner.SpawnResourcesInGrid(WoodCount, RockCount);
+        resourceSpawner.SpawnResourcesRadial(WoodCount, RockCount);
         var resourceSpawnerTime = stopwatch.ElapsedMilliseconds;
         stopwatch.Stop();
 
         var resourceCount = resourceSpawner.spawnedResources.Count;
 
-        UnityEngine.Debug.Log($"Map generation time: {mapGenerationTime}; Resource generation time: {resourceSpawnerTime}. Generated resource count: {resourceCount}.");
+        UnityEngine.Debug.Log($"[Perlin][Radial] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Generated resource count: {resourceCount}.");
     }
 
     private void GenerateSimplexClusters()
@@ -122,7 +122,7 @@ public class MapGeneratorTestUI : MonoBehaviour
 
         var resourceCount = resourceSpawner.spawnedResources.Count;
 
-        UnityEngine.Debug.Log($"Map generation time: {mapGenerationTime}; Resource generation time: {resourceSpawnerTime}. Generated resource count: {resourceCount}.");
+        UnityEngine.Debug.Log($"[Simplex][Clusters] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Generated resource count: {resourceCount}.");
     }
 
     private void GenerateSimplexGrid()
@@ -142,7 +142,7 @@ public class MapGeneratorTestUI : MonoBehaviour
 
         var resourceCount = resourceSpawner.spawnedResources.Count;
 
-        UnityEngine.Debug.Log($"Map generation time: {mapGenerationTime}; Resource generation time: {resourceSpawnerTime}. Generated resource count: {resourceCount}.");
+        UnityEngine.Debug.Log($"[Simplex][Grid] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Generated resource count: {resourceCount}.");
     }
 
     private void GenerateSimplexRadial()
@@ -156,13 +156,13 @@ public class MapGeneratorTestUI : MonoBehaviour
         stopwatch.Reset();
 
         stopwatch.Start();
-        resourceSpawner.SpawnResourcesInGrid(WoodCount, RockCount);
+        resourceSpawner.SpawnResourcesRadial(WoodCount, RockCount);
         var resourceSpawnerTime = stopwatch.ElapsedMilliseconds;
         stopwatch.Stop();
 
         var resourceCount = resourceSpawner.spawnedResources.Count;
 
-        UnityEngine.Debug.Log($"Map generation time: {mapGenerationTime}; Resource generation time: {resourceSpawnerTime}. Generated resource count: {resourceCount}.");
+        UnityEngine.Debug.Log($"[Simplex][Radial] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Generated resource count: {resourceCount}.");
     }
 
     private void GenerateMapUsingSimplexNoise()
