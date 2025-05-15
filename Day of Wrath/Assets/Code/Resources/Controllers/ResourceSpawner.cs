@@ -18,7 +18,7 @@ public class ResourceSpawner : MonoBehaviour
     public Terrain terrain;
 
     private LayerMask blockingLayers;
-    private List<GameObject> spawnedResources = new List<GameObject>();
+    public List<GameObject> spawnedResources = new List<GameObject>();
 
     private void Start()
     {
@@ -64,7 +64,7 @@ public class ResourceSpawner : MonoBehaviour
                 );
 
                 var spawnPosition = clusterCenter + randomOffset;
-                spawnPosition.y = terrain.SampleHeight(spawnPosition) + terrain.transform.position.y;
+                spawnPosition = ClampAndAlignToTerrain(spawnPosition);
 
                 var randomScale = Random.Range(0.8f, 3f);
                 var randomRotation = RandomRotation();
@@ -105,7 +105,7 @@ public class ResourceSpawner : MonoBehaviour
                     -mapSize.y / 2 + z * cellSize + Random.Range(-cellSize / 2, cellSize / 2)
                 );
 
-                position.y = terrain.SampleHeight(position) + terrain.transform.position.y;
+                position = ClampAndAlignToTerrain(position);
 
                 var randomScale = Random.Range(0.8f, 3f);
                 var randomRotation = RandomRotation();
@@ -162,7 +162,7 @@ public class ResourceSpawner : MonoBehaviour
                     Mathf.Sin(angle * Mathf.Deg2Rad) * radius
                 );
 
-                position.y = terrain.SampleHeight(position) + terrain.transform.position.y;
+                position = ClampAndAlignToTerrain(position);
 
                 var randomScale = Random.Range(0.8f, 3f);
                 var randomRotation = RandomRotation();
@@ -185,8 +185,39 @@ public class ResourceSpawner : MonoBehaviour
         }
     }
 
+    private Vector3 ClampAndAlignToTerrain(Vector3 position)
+    {
+        Vector3 terrainPos = terrain.transform.position;
+        Vector3 terrainSize = terrain.terrainData.size;
+
+        var bezel = 0.95f;
+
+        float minX = terrainPos.x * bezel;
+        float maxX = (terrainPos.x + terrainSize.x) * bezel;
+        float minZ = terrainPos.z * bezel;
+        float maxZ = (terrainPos.z + terrainSize.z) * bezel;
+
+        position.x = Mathf.Clamp(position.x, minX, maxX);
+        position.z = Mathf.Clamp(position.z, minZ, maxZ);
+        position.y = terrain.SampleHeight(position) + terrainPos.y;
+
+        return position;
+    }
+
     private bool IsValidSpawnPosition(Vector3 position, GameObject prefab, float scale, Quaternion rotation)
     {
+        Vector3 terrainPos = terrain.transform.position;
+        Vector3 terrainSize = terrain.terrainData.size;
+
+        float normX = (position.x - terrainPos.x) / terrainSize.x;
+        float normZ = (position.z - terrainPos.z) / terrainSize.z;
+
+        Vector3 normal = terrain.terrainData.GetInterpolatedNormal(normX, normZ);
+        float slope = Vector3.Angle(normal, Vector3.up);
+
+        if (slope > 30f) // tweak this value if needed
+            return false;
+
         var prefabCollider = prefab.GetComponentInChildren<BoxCollider>();
         if (prefabCollider == null)
         {

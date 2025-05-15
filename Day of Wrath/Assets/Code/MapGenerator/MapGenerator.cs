@@ -185,8 +185,15 @@ public class MapGenerator : MonoBehaviour
             return;
         }
 
+        // Apply new resolution and size
         runtimeTerrainData.heightmapResolution = resolution;
         runtimeTerrainData.size = new Vector3(terrainWidth, heightMultiplier, terrainLength);
+
+        // Recenter terrain position to keep it centered around (0,0,0)
+        float centerOffsetX = -terrainWidth / 2f;
+        float centerOffsetZ = -terrainLength / 2f;
+        terrain.transform.position = new Vector3(centerOffsetX, 0, centerOffsetZ);
+
         runtimeTerrainData.SetHeights(0, 0, heights);
     }
 
