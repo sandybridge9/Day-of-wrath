@@ -39,6 +39,10 @@ public class MapGeneratorTestUI : MonoBehaviour
         mapGenerator.heightMultiplier = HeightMultiplier;
         mapGenerator.terrainLength = MapLength;
         mapGenerator.terrainWidth = MapWidth;
+
+        resourceSpawner.defaultRockCount = RockCount;
+        resourceSpawner.defaultWoodCount = WoodCount;
+        resourceSpawner.mapSize = new Vector2(MapWidth, MapLength);
     }
 
     private void GeneratePerlinClusters()
