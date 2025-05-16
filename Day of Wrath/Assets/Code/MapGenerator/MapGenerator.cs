@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using UnityEngine;
 
 [RequireComponent(typeof(Terrain))]
@@ -42,19 +41,19 @@ public class MapGenerator : MonoBehaviour
 
     public void GenerateWithPerlin()
     {
-        float offsetX = Random.Range(0f, 9999f);
-        float offsetY = Random.Range(0f, 9999f);
+        var offsetX = Random.Range(0f, 9999f);
+        var offsetY = Random.Range(0f, 9999f);
 
-        float[,] heights = new float[resolution, resolution];
+        var heights = new float[resolution, resolution];
 
-        for (int x = 0; x < resolution; x++)
+        for (var x = 0; x < resolution; x++)
         {
-            for (int y = 0; y < resolution; y++)
+            for (var y = 0; y < resolution; y++)
             {
-                float xCoord = (float)x / resolution * scale + offsetX;
-                float yCoord = (float)y / resolution * scale + offsetY;
+                var xCoord = (float)x / resolution * scale + offsetX;
+                var yCoord = (float)y / resolution * scale + offsetY;
 
-                float sample = Mathf.PerlinNoise(xCoord, yCoord);
+                var sample = Mathf.PerlinNoise(xCoord, yCoord);
                 heights[x, y] = sample;
             }
         }
@@ -64,19 +63,19 @@ public class MapGenerator : MonoBehaviour
 
     public void GenerateWithSimplex()
     {
-        float offsetX = Random.Range(0f, 9999f);
-        float offsetY = Random.Range(0f, 9999f);
+        var offsetX = Random.Range(0f, 9999f);
+        var offsetY = Random.Range(0f, 9999f);
 
-        float[,] heights = new float[resolution, resolution];
+        var heights = new float[resolution, resolution];
 
-        for (int x = 0; x < resolution; x++)
+        for (var x = 0; x < resolution; x++)
         {
-            for (int y = 0; y < resolution; y++)
+            for (var y = 0; y < resolution; y++)
             {
-                float xCoord = (float)x / resolution * scale + offsetX;
-                float yCoord = (float)y / resolution * scale + offsetY;
+                var xCoord = (float)x / resolution * scale + offsetX;
+                var yCoord = (float)y / resolution * scale + offsetY;
 
-                float sample = SimplexNoise.Noise(xCoord, yCoord);
+                var sample = SimplexNoise.Noise(xCoord, yCoord);
                 sample = (sample + 1f) / 2f;
                 heights[x, y] = sample;
             }
@@ -90,66 +89,64 @@ public class MapGenerator : MonoBehaviour
         bool hill, bool valley, bool crater, bool mountains,
         float hillIntensity, float valleyIntensity, float craterIntensity, float mountainIntensity)
     {
-        float[,] heights = new float[resolution, resolution];
+        var heights = new float[resolution, resolution];
 
-        float offsetX = Random.Range(0f, 9999f);
-        float offsetY = Random.Range(0f, 9999f);
+        var offsetX = Random.Range(0f, 9999f);
+        var offsetY = Random.Range(0f, 9999f);
 
-        Vector2 hillCenter = new Vector2(Random.Range(resolution * 0.2f, resolution * 0.8f), Random.Range(resolution * 0.2f, resolution * 0.8f));
-        float hillRadius = Random.Range(resolution * 0.25f, resolution * 0.35f);
+        var hillCenter = new Vector2(Random.Range(resolution * 0.2f, resolution * 0.8f), Random.Range(resolution * 0.2f, resolution * 0.8f));
+        var hillRadius = Random.Range(resolution * 0.25f, resolution * 0.35f);
 
-        Vector2 valleyCenter = new Vector2(Random.Range(resolution * 0.2f, resolution * 0.8f), Random.Range(resolution * 0.2f, resolution * 0.8f));
-        float valleyRadius = Random.Range(resolution * 0.25f, resolution * 0.35f);
+        var valleyCenter = new Vector2(Random.Range(resolution * 0.2f, resolution * 0.8f), Random.Range(resolution * 0.2f, resolution * 0.8f));
+        var valleyRadius = Random.Range(resolution * 0.25f, resolution * 0.35f);
 
-        Vector2 craterCenter = new Vector2(Random.Range(resolution * 0.2f, resolution * 0.8f), Random.Range(resolution * 0.2f, resolution * 0.8f));
-        float craterRadius = Random.Range(resolution * 0.25f, resolution * 0.35f);
+        var craterCenter = new Vector2(Random.Range(resolution * 0.2f, resolution * 0.8f), Random.Range(resolution * 0.2f, resolution * 0.8f));
+        var craterRadius = Random.Range(resolution * 0.25f, resolution * 0.35f);
 
-        float ridgeAngle = Random.Range(0f, Mathf.PI);
+        var ridgeAngle = Random.Range(0f, Mathf.PI);
 
-        for (int x = 0; x < resolution; x++)
+        for (var x = 0; x < resolution; x++)
         {
-            for (int y = 0; y < resolution; y++)
+            for (var y = 0; y < resolution; y++)
             {
-                float nx = (float)x / resolution;
-                float ny = (float)y / resolution;
-                Vector2 pos = new Vector2(x, y);
+                var nx = (float)x / resolution;
+                var ny = (float)y / resolution;
+                var pos = new Vector2(x, y);
 
-                float noise = 1f;
+                var noise = 1f;
+
                 if (usePerlin)
                     noise = Mathf.PerlinNoise(x * 0.03f + offsetX, y * 0.03f + offsetY);
                 else if (useSimplex)
                     noise = (SimplexNoise.Noise(x * 0.03f + offsetX, y * 0.03f + offsetY) + 1f) / 2f;
 
-                float height = 0f;
-                float blendSum = 0f;
+                var height = 0f;
+                var blendSum = 0f;
 
-                // Hill
                 if (hill)
                 {
-                    float dist = Vector2.Distance(pos, hillCenter);
-                    float shape = Mathf.Clamp01(1f - dist / hillRadius);
+                    var dist = Vector2.Distance(pos, hillCenter);
+                    var shape = Mathf.Clamp01(1f - dist / hillRadius);
                     shape = Mathf.Pow(shape, 2.5f); // steeper
                     height += shape * hillIntensity * noise;
                     blendSum += shape;
                 }
 
-                // Valley
                 if (valley)
                 {
-                    float dist = Vector2.Distance(pos, valleyCenter);
-                    float shape = Mathf.Clamp01(1f - dist / valleyRadius);
+                    var dist = Vector2.Distance(pos, valleyCenter);
+                    var shape = Mathf.Clamp01(1f - dist / valleyRadius);
                     shape = Mathf.Pow(shape, 2.5f);
                     height -= shape * valleyIntensity * noise;
                     blendSum += shape;
                 }
 
-                // Crater
                 if (crater)
                 {
-                    float dist = Vector2.Distance(pos, craterCenter);
-                    float shape = Mathf.Clamp01(1f - dist / craterRadius);
+                    var dist = Vector2.Distance(pos, craterCenter);
+                    var shape = Mathf.Clamp01(1f - dist / craterRadius);
                     shape = Mathf.Pow(shape, 2.0f);
-                    float ring = Mathf.Abs(Mathf.Sin(dist / craterRadius * Mathf.PI));
+                    var ring = Mathf.Abs(Mathf.Sin(dist / craterRadius * Mathf.PI));
                     height -= ring * craterIntensity * noise;
                     blendSum += shape;
                 }
@@ -157,10 +154,10 @@ public class MapGenerator : MonoBehaviour
                 // Mountain Ridge
                 if (mountains)
                 {
-                    float projection = nx * Mathf.Cos(ridgeAngle) + ny * Mathf.Sin(ridgeAngle);
-                    float ridge = Mathf.Sin(projection * 10f);
-                    float fade = Mathf.Clamp01(1f - Mathf.Abs(ny - 0.5f) * 2f);
-                    float shape = Mathf.Pow(Mathf.Clamp01(ridge), 2.5f) * fade;
+                    var projection = nx * Mathf.Cos(ridgeAngle) + ny * Mathf.Sin(ridgeAngle);
+                    var ridge = Mathf.Sin(projection * 10f);
+                    var fade = Mathf.Clamp01(1f - Mathf.Abs(ny - 0.5f) * 2f);
+                    var shape = Mathf.Pow(Mathf.Clamp01(ridge), 2.5f) * fade;
                     height += shape * mountainIntensity * noise;
                     blendSum += shape;
                 }
@@ -186,13 +183,11 @@ public class MapGenerator : MonoBehaviour
             return;
         }
 
-        // Apply new resolution and size
         runtimeTerrainData.heightmapResolution = resolution;
         runtimeTerrainData.size = new Vector3(terrainWidth, heightMultiplier, terrainLength);
 
-        // Recenter terrain position to keep it centered around (0,0,0)
-        float centerOffsetX = -terrainWidth / 2f;
-        float centerOffsetZ = -terrainLength / 2f;
+        var centerOffsetX = -terrainWidth / 2f;
+        var centerOffsetZ = -terrainLength / 2f;
         terrain.transform.position = new Vector3(centerOffsetX, 0, centerOffsetZ);
 
         runtimeTerrainData.SetHeights(0, 0, heights);
@@ -200,31 +195,36 @@ public class MapGenerator : MonoBehaviour
 
     public void FlattenTerrain()
     {
-        float[,] flat = new float[resolution, resolution];
-        for (int x = 0; x < resolution; x++)
-            for (int y = 0; y < resolution; y++)
-                flat[x, y] = 0f;
+        var flat = new float[resolution, resolution];
+
+        for (var x = 0; x < resolution; x++)
+        {
+            for (var y = 0; y < resolution; y++)
+            {
+                flat[x, y] = 0;
+            }
+        }
 
         ApplyHeights(flat);
     }
 
     public float CalculateUsableTerrainPercentage(float maxSlope = 30f, int resolution = 64)
     {
-        TerrainData terrainData = terrain.terrainData;
-        Vector3 terrainSize = terrainData.size;
+        var terrainData = terrain.terrainData;
+        var terrainSize = terrainData.size;
 
-        int usableCount = 0;
-        int totalCount = resolution * resolution;
+        var usableCount = 0;
+        var totalCount = resolution * resolution;
 
-        for (int x = 0; x < resolution; x++)
+        for (var x = 0; x < resolution; x++)
         {
-            for (int z = 0; z < resolution; z++)
+            for (var z = 0; z < resolution; z++)
             {
-                float normX = (float)x / (resolution - 1);
-                float normZ = (float)z / (resolution - 1);
+                var normX = (float)x / (resolution - 1);
+                var normZ = (float)z / (resolution - 1);
 
-                Vector3 normal = terrainData.GetInterpolatedNormal(normX, normZ);
-                float slope = Vector3.Angle(normal, Vector3.up);
+                var normal = terrainData.GetInterpolatedNormal(normX, normZ);
+                var slope = Vector3.Angle(normal, Vector3.up);
 
                 if (slope <= maxSlope)
                 {

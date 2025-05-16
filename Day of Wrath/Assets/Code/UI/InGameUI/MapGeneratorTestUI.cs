@@ -19,7 +19,7 @@ public class MapGeneratorTestUI : MonoBehaviour
     [Header("Resource Spawner Reference")]
     public ResourceSpawner resourceSpawner;
 
-    private const float HeightMultiplier = 10f;
+    private const float HeightMultiplier = 8f;
     private const int MapWidth = 512;
     private const int MapLength = 512;
 
@@ -63,8 +63,9 @@ public class MapGeneratorTestUI : MonoBehaviour
         var resourceCount = resourceSpawner.spawnedResources.Count;
         var standardDeviation = resourceSpawner.CalculateResourceBalanceStandardDeviation();
         var clusteringCoefficient = resourceSpawner.CalculateClusteringCoefficient();
+        var usableTerrainPercentage = mapGenerator.CalculateUsableTerrainPercentage();
 
-        UnityEngine.Debug.Log($"[Perlin][Clusters] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Generated resource count: {resourceCount}, StandardDeviation: {standardDeviation}, ClusteringCoefficient: {clusteringCoefficient}.");
+        UnityEngine.Debug.Log($"[Perlin][Clusters] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Usable Terrain Percentage: {usableTerrainPercentage}, Generated resource count: {resourceCount}, Standard Resource Deviation: {standardDeviation}, Resource Clustering Coefficient: {clusteringCoefficient}.");
     }
 
     private void GeneratePerlinGrid()
@@ -85,8 +86,9 @@ public class MapGeneratorTestUI : MonoBehaviour
         var resourceCount = resourceSpawner.spawnedResources.Count;
         var standardDeviation = resourceSpawner.CalculateResourceBalanceStandardDeviation();
         var clusteringCoefficient = resourceSpawner.CalculateClusteringCoefficient();
+        var usableTerrainPercentage = mapGenerator.CalculateUsableTerrainPercentage();
 
-        UnityEngine.Debug.Log($"[Perlin][Grid] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Generated resource count: {resourceCount}, StandardDeviation: {standardDeviation}, ClusteringCoefficient: {clusteringCoefficient}.");
+        UnityEngine.Debug.Log($"[Perlin][Grid] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Usable Terrain Percentage: {usableTerrainPercentage}, Generated resource count: {resourceCount}, Standard Resource Deviation: {standardDeviation}, Resource Clustering Coefficient: {clusteringCoefficient}.");
     }
 
     private void GeneratePerlinRadial()
@@ -107,8 +109,9 @@ public class MapGeneratorTestUI : MonoBehaviour
         var resourceCount = resourceSpawner.spawnedResources.Count;
         var standardDeviation = resourceSpawner.CalculateResourceBalanceStandardDeviation();
         var clusteringCoefficient = resourceSpawner.CalculateClusteringCoefficient();
+        var usableTerrainPercentage = mapGenerator.CalculateUsableTerrainPercentage();
 
-        UnityEngine.Debug.Log($"[Perlin][Radial] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Generated resource count: {resourceCount}, StandardDeviation: {standardDeviation}, ClusteringCoefficient: {clusteringCoefficient}.");
+        UnityEngine.Debug.Log($"[Perlin][Radial] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Usable Terrain Percentage: {usableTerrainPercentage}, Generated resource count: {resourceCount}, Standard Resource Deviation:  {standardDeviation} , Resource Clustering Coefficient: {clusteringCoefficient}.");
     }
 
     private void GenerateSimplexClusters()
@@ -129,8 +132,9 @@ public class MapGeneratorTestUI : MonoBehaviour
         var resourceCount = resourceSpawner.spawnedResources.Count;
         var standardDeviation = resourceSpawner.CalculateResourceBalanceStandardDeviation();
         var clusteringCoefficient = resourceSpawner.CalculateClusteringCoefficient();
+        var usableTerrainPercentage = mapGenerator.CalculateUsableTerrainPercentage();
 
-        UnityEngine.Debug.Log($"[Simplex][Clusters] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Generated resource count: {resourceCount}, StandardDeviation: {standardDeviation}, ClusteringCoefficient: {clusteringCoefficient}.");
+        UnityEngine.Debug.Log($"[Simplex][Clusters] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Usable Terrain Percentage: {usableTerrainPercentage}, Generated resource count: {resourceCount}, Standard Resource Deviation: {standardDeviation}, Resource Clustering Coefficient: {clusteringCoefficient}, Usable Terrain Percentage: {usableTerrainPercentage}.");
     }
 
     private void GenerateSimplexGrid()
@@ -151,8 +155,9 @@ public class MapGeneratorTestUI : MonoBehaviour
         var resourceCount = resourceSpawner.spawnedResources.Count;
         var standardDeviation = resourceSpawner.CalculateResourceBalanceStandardDeviation();
         var clusteringCoefficient = resourceSpawner.CalculateClusteringCoefficient();
+        var usableTerrainPercentage = mapGenerator.CalculateUsableTerrainPercentage();
 
-        UnityEngine.Debug.Log($"[Simplex][Grid] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Generated resource count: {resourceCount}, StandardDeviation: {standardDeviation}, ClusteringCoefficient: {clusteringCoefficient}.");
+        UnityEngine.Debug.Log($"[Simplex][Grid] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Usable Terrain Percentage: {usableTerrainPercentage}, Generated resource count: {resourceCount}, Standard Resource Deviation:  {standardDeviation} , Resource Clustering Coefficient: {clusteringCoefficient}.");
     }
 
     private void GenerateSimplexRadial()
@@ -173,7 +178,8 @@ public class MapGeneratorTestUI : MonoBehaviour
         var resourceCount = resourceSpawner.spawnedResources.Count;
         var standardDeviation = resourceSpawner.CalculateResourceBalanceStandardDeviation();
         var clusteringCoefficient = resourceSpawner.CalculateClusteringCoefficient();
+        var usableTerrainPercentage = mapGenerator.CalculateUsableTerrainPercentage();
 
-        UnityEngine.Debug.Log($"[Simplex][Radial] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Generated resource count: {resourceCount}, StandardDeviation: {standardDeviation}, ClusteringCoefficient: {clusteringCoefficient}.");
+        UnityEngine.Debug.Log($"[Simplex][Radial] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Usable Terrain Percentage: {usableTerrainPercentage}, Generated resource count: {resourceCount}, Standard Resource Deviation:  {standardDeviation} , Resource Clustering Coefficient: {clusteringCoefficient}.");
     }
 }

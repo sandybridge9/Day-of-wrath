@@ -21,10 +21,6 @@ public class ResourceSpawner : MonoBehaviour
     private LayerMask blockingLayers;
     public List<GameObject> spawnedResources = new List<GameObject>();
 
-    public bool drawHeatmapOnce = true;
-    public int heatmapResolution = 64;
-    private List<Vector3> debugHeatmapLines = new();
-
     private void Start()
     {
         blockingLayers = LayerManager.ResourceSpawningBlockingLayers;
@@ -192,15 +188,15 @@ public class ResourceSpawner : MonoBehaviour
 
     private Vector3 ClampAndAlignToTerrain(Vector3 position)
     {
-        Vector3 terrainPos = terrain.transform.position;
-        Vector3 terrainSize = terrain.terrainData.size;
+        var terrainPos = terrain.transform.position;
+        var terrainSize = terrain.terrainData.size;
 
         var bezel = 0.95f;
 
-        float minX = terrainPos.x * bezel;
-        float maxX = (terrainPos.x + terrainSize.x) * bezel;
-        float minZ = terrainPos.z * bezel;
-        float maxZ = (terrainPos.z + terrainSize.z) * bezel;
+        var minX = terrainPos.x * bezel;
+        var maxX = (terrainPos.x + terrainSize.x) * bezel;
+        var minZ = terrainPos.z * bezel;
+        var maxZ = (terrainPos.z + terrainSize.z) * bezel;
 
         position.x = Mathf.Clamp(position.x, minX, maxX);
         position.z = Mathf.Clamp(position.z, minZ, maxZ);
@@ -211,14 +207,14 @@ public class ResourceSpawner : MonoBehaviour
 
     private bool IsValidSpawnPosition(Vector3 position, GameObject prefab, float scale, Quaternion rotation)
     {
-        Vector3 terrainPos = terrain.transform.position;
-        Vector3 terrainSize = terrain.terrainData.size;
+        var terrainPos = terrain.transform.position;
+        var terrainSize = terrain.terrainData.size;
 
-        float normX = (position.x - terrainPos.x) / terrainSize.x;
-        float normZ = (position.z - terrainPos.z) / terrainSize.z;
+        var normX = (position.x - terrainPos.x) / terrainSize.x;
+        var normZ = (position.z - terrainPos.z) / terrainSize.z;
 
-        Vector3 normal = terrain.terrainData.GetInterpolatedNormal(normX, normZ);
-        float slope = Vector3.Angle(normal, Vector3.up);
+        var normal = terrain.terrainData.GetInterpolatedNormal(normX, normZ);
+        var slope = Vector3.Angle(normal, Vector3.up);
 
         if (slope > 30f) // tweak this value if needed
             return false;
@@ -250,51 +246,65 @@ public class ResourceSpawner : MonoBehaviour
 
     public float CalculateResourceBalanceStandardDeviation(int resolution = 64)
     {
-        int[,] heatmap = new int[resolution, resolution];
-        Vector3 terrainPos = terrain.transform.position;
-        Vector3 terrainSize = terrain.terrainData.size;
+        var heatmap = new int[resolution, resolution];
+        var terrainPos = terrain.transform.position;
+        var terrainSize = terrain.terrainData.size;
 
         foreach (var obj in spawnedResources)
         {
-            Vector3 localPos = obj.transform.position - terrainPos;
+            var localPos = obj.transform.position - terrainPos;
 
-            int x = Mathf.Clamp(Mathf.FloorToInt(localPos.x / terrainSize.x * resolution), 0, resolution - 1);
-            int z = Mathf.Clamp(Mathf.FloorToInt(localPos.z / terrainSize.z * resolution), 0, resolution - 1);
+            var x = Mathf.Clamp(Mathf.FloorToInt(localPos.x / terrainSize.x * resolution), 0, resolution - 1);
+            var z = Mathf.Clamp(Mathf.FloorToInt(localPos.z / terrainSize.z * resolution), 0, resolution - 1);
 
             heatmap[x, z]++;
         }
 
         // Flatten the 2D array to a 1D list
-        List<int> counts = new List<int>();
-        foreach (var count in heatmap)
-            counts.Add(count);
+        var counts = new List<int>();
 
-        float mean = (float)counts.Average();
-        float variance = counts.Average(c => Mathf.Pow(c - mean, 2));
-        float std = Mathf.Sqrt(variance);
+        foreach (var count in heatmap)
+        {
+            counts.Add(count);
+        }
+
+        var mean = (float)counts.Average();
+        var variance = counts.Average(c => Mathf.Pow(c - mean, 2));
+        var std = Mathf.Sqrt(variance);
 
         return std;
     }
 
     public float CalculateClusteringCoefficient()
     {
-        if (spawnedResources.Count < 2) return 0f;
+        if (spawnedResources.Count < 2)
+        {
+            return 0f;
+        }
 
         var positions = spawnedResources
             .Select(r => new Vector2(r.transform.position.x, r.transform.position.z))
             .ToList();
 
-        float total = 0f;
-        for (int i = 0; i < positions.Count; i++)
-        {
-            float minDist = float.MaxValue;
+        var total = 0f;
 
-            for (int j = 0; j < positions.Count; j++)
+        for (var i = 0; i < positions.Count; i++)
+        {
+            var minDist = float.MaxValue;
+
+            for (var j = 0; j < positions.Count; j++)
             {
-                if (i == j) continue;
-                float dist = Vector2.Distance(positions[i], positions[j]);
+                if (i == j)
+                {
+                    continue;
+                }
+
+                var dist = Vector2.Distance(positions[i], positions[j]);
+
                 if (dist < minDist)
+                {
                     minDist = dist;
+                }
             }
 
             total += minDist;
