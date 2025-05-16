@@ -157,7 +157,12 @@ public class MapGeneratorTestUI : MonoBehaviour
         var clusteringCoefficient = resourceSpawner.CalculateClusteringCoefficient();
         var usableTerrainPercentage = mapGenerator.CalculateUsableTerrainPercentage();
 
-        UnityEngine.Debug.Log($"[Simplex][Grid] Map generation time: {mapGenerationTime}ms; Resource generation time: {resourceSpawnerTime}ms; Usable Terrain Percentage: {usableTerrainPercentage}, Generated resource count: {resourceCount}, Standard Resource Deviation:  {standardDeviation} , Resource Clustering Coefficient: {clusteringCoefficient}.");
+        UnityEngine.Debug.Log($"[Simplex][Grid] Map generation time: {mapGenerationTime}ms;" +
+            $" Resource generation time: {resourceSpawnerTime}ms;" +
+            $" Usable Terrain Percentage: {usableTerrainPercentage}," +
+            $" Generated resource count: {resourceCount}," +
+            $" Standard Resource Deviation:  {standardDeviation} ," +
+            $" Resource Clustering Coefficient: {clusteringCoefficient}.");
     }
 
     private void GenerateSimplexRadial()
