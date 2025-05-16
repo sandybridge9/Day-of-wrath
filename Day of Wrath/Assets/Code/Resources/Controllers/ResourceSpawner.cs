@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class ResourceSpawner : MonoBehaviour
@@ -19,6 +20,10 @@ public class ResourceSpawner : MonoBehaviour
 
     private LayerMask blockingLayers;
     public List<GameObject> spawnedResources = new List<GameObject>();
+
+    public bool drawHeatmapOnce = true;
+    public int heatmapResolution = 64;
+    private List<Vector3> debugHeatmapLines = new();
 
     private void Start()
     {
@@ -241,5 +246,60 @@ public class ResourceSpawner : MonoBehaviour
     private Quaternion RandomRotation()
     {
         return Quaternion.Euler(0, Random.Range(0f, 360f), 0);
+    }
+
+    public float CalculateResourceBalanceStandardDeviation(int resolution = 64)
+    {
+        int[,] heatmap = new int[resolution, resolution];
+        Vector3 terrainPos = terrain.transform.position;
+        Vector3 terrainSize = terrain.terrainData.size;
+
+        foreach (var obj in spawnedResources)
+        {
+            Vector3 localPos = obj.transform.position - terrainPos;
+
+            int x = Mathf.Clamp(Mathf.FloorToInt(localPos.x / terrainSize.x * resolution), 0, resolution - 1);
+            int z = Mathf.Clamp(Mathf.FloorToInt(localPos.z / terrainSize.z * resolution), 0, resolution - 1);
+
+            heatmap[x, z]++;
+        }
+
+        // Flatten the 2D array to a 1D list
+        List<int> counts = new List<int>();
+        foreach (var count in heatmap)
+            counts.Add(count);
+
+        float mean = (float)counts.Average();
+        float variance = counts.Average(c => Mathf.Pow(c - mean, 2));
+        float std = Mathf.Sqrt(variance);
+
+        return std;
+    }
+
+    public float CalculateClusteringCoefficient()
+    {
+        if (spawnedResources.Count < 2) return 0f;
+
+        var positions = spawnedResources
+            .Select(r => new Vector2(r.transform.position.x, r.transform.position.z))
+            .ToList();
+
+        float total = 0f;
+        for (int i = 0; i < positions.Count; i++)
+        {
+            float minDist = float.MaxValue;
+
+            for (int j = 0; j < positions.Count; j++)
+            {
+                if (i == j) continue;
+                float dist = Vector2.Distance(positions[i], positions[j]);
+                if (dist < minDist)
+                    minDist = dist;
+            }
+
+            total += minDist;
+        }
+
+        return total / positions.Count;
     }
 }

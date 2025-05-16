@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using UnityEngine;
 
 [RequireComponent(typeof(Terrain))]
@@ -205,5 +206,33 @@ public class MapGenerator : MonoBehaviour
                 flat[x, y] = 0f;
 
         ApplyHeights(flat);
+    }
+
+    public float CalculateUsableTerrainPercentage(float maxSlope = 30f, int resolution = 64)
+    {
+        TerrainData terrainData = terrain.terrainData;
+        Vector3 terrainSize = terrainData.size;
+
+        int usableCount = 0;
+        int totalCount = resolution * resolution;
+
+        for (int x = 0; x < resolution; x++)
+        {
+            for (int z = 0; z < resolution; z++)
+            {
+                float normX = (float)x / (resolution - 1);
+                float normZ = (float)z / (resolution - 1);
+
+                Vector3 normal = terrainData.GetInterpolatedNormal(normX, normZ);
+                float slope = Vector3.Angle(normal, Vector3.up);
+
+                if (slope <= maxSlope)
+                {
+                    usableCount++;
+                }
+            }
+        }
+
+        return (float)usableCount / totalCount * 100f;
     }
 }
