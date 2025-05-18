@@ -1,7 +1,11 @@
+using Codice.Client.BaseCommands.Filters;
+
 public class ResourceFacilityBuilding : BuildingBase
 {
     private ResourceProducer resourceProducer;
     private CapacityBooster capacityBooster;
+
+    private bool manualInit = false;
 
     protected override void Start()
     {
@@ -14,6 +18,19 @@ public class ResourceFacilityBuilding : BuildingBase
     public override void OnBuildingPlaced()
     {
         base.OnBuildingPlaced();
+
+        if (manualInit)
+        {
+            if (capacityBooster != null)
+            {
+                capacityBooster.ManualInit();
+            }
+
+            if (resourceProducer != null)
+            {
+                resourceProducer.ManualInit();
+            }
+        }
 
         if (capacityBooster != null)
         {
@@ -39,5 +56,13 @@ public class ResourceFacilityBuilding : BuildingBase
         {
             resourceProducer.StopProduction();
         }
+    }
+
+    public void ManualInit()
+    {
+        manualInit = true;
+
+        resourceProducer = GetComponent<ResourceProducer>();
+        capacityBooster = GetComponent<CapacityBooster>();
     }
 }

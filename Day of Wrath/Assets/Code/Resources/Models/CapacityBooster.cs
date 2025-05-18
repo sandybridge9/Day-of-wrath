@@ -42,4 +42,14 @@ public class CapacityBooster : MonoBehaviour
             }
         }
     }
+
+    public void ManualInit()
+    {
+        resourceController = FindObjectOfType<ResourceController>();
+
+        if (resourceController == null)
+        {
+            Debug.LogError("ResourceController not found in the scene!");
+        }
+    }
 }

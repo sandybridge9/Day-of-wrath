@@ -21,12 +21,11 @@ public class ResourceProducer : MonoBehaviour
 
             return;
         }
-
-        //StartProduction();
     }
 
     public void StartProduction()
     {
+        Debug.Log("Starting production");
         productionCoroutine ??= StartCoroutine(ProduceResources());
     }
 
@@ -51,6 +50,16 @@ public class ResourceProducer : MonoBehaviour
 
                 Debug.Log($"{production.productionAmount} {production.resourceType} produced by {gameObject.name}");
             }
+        }
+    }
+
+    public void ManualInit()
+    {
+        resourceController = FindObjectOfType<ResourceController>();
+
+        if (resourceController == null)
+        {
+            Debug.LogError("ResourceController not found in the scene!");
         }
     }
 }
