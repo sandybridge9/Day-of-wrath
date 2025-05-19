@@ -25,13 +25,13 @@ public class WinLoseController : MonoBehaviour
             return;
         }
 
-        if (!EnemyTownhallHasBeenBuilt)
-        {
-            LookForEnemyTownhall();
-        }
+        //if (!EnemyTownhallHasBeenBuilt)
+        //{
+        //    LookForEnemyTownhall();
+        //}
 
-        CheckWinCondition();
-        CheckLoseCondition();
+        //CheckWinCondition();
+        //CheckLoseCondition();
     }
 
     private void LookForEnemyTownhall()

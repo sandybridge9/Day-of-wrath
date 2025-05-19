@@ -25,7 +25,7 @@ public class CapacityBooster : MonoBehaviour
             {
                 resourceController.IncreaseCapacity(boost.resourceType, boost.amount);
 
-                Debug.Log($"{boost.amount} capacity added for {boost.resourceType}");
+                //Debug.Log($"{boost.amount} capacity added for {boost.resourceType}");
             }
         }
     }
@@ -38,7 +38,7 @@ public class CapacityBooster : MonoBehaviour
             {
                 resourceController.DecreaseCapacity(boost.resourceType, boost.amount);
 
-                Debug.Log($"{boost.amount} capacity removed for {boost.resourceType}");
+                //Debug.Log($"{boost.amount} capacity removed for {boost.resourceType}");
             }
         }
     }

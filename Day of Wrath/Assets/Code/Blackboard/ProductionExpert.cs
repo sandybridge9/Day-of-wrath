@@ -6,7 +6,7 @@ public class ProductionExpert
     private readonly ResourceController controller;
     private readonly List<GameObject> allBuildingPrefabs;
 
-    private const float CapacityThreshold = 0.9f; // 90% full
+    private const float CapacityThreshold = 0.9f;
 
     public ProductionExpert(ResourceController controller, List<GameObject> buildingPrefabs)
     {
@@ -16,7 +16,6 @@ public class ProductionExpert
 
     public ResourceType? GetMostUrgentResource()
     {
-        // Step 1: Capacity check
         foreach (ResourceType rt in System.Enum.GetValues(typeof(ResourceType)))
         {
             int amount = controller.GetResourceAmount(rt);
@@ -25,12 +24,11 @@ public class ProductionExpert
 
             if (ratio >= CapacityThreshold)
             {
-                Debug.Log($"⚠️ Capacity for {rt} is high ({amount}/{capacity}). Prioritizing storage.");
-                return null; // Special signal to build warehouse
+                Debug.Log($"Capacity for {rt} is high ({amount}/{capacity}). Prioritizing storage.");
+                return null;
             }
         }
 
-        // Step 2: Score system
         var production = CalculateTotalProduction();
         var demandWeights = CalculateCostDemandWeights();
         Dictionary<ResourceType, float> scores = new();

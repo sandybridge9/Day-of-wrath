@@ -48,7 +48,7 @@ public class ResourceProducer : MonoBehaviour
             {
                 resourceController.AddResource(production.resourceType, production.productionAmount);
 
-                Debug.Log($"{production.productionAmount} {production.resourceType} produced by {gameObject.name}");
+                //Debug.Log($"{production.productionAmount} {production.resourceType} produced by {gameObject.name}");
             }
         }
     }

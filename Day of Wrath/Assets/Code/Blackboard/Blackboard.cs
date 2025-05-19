@@ -1,41 +1,34 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Diagnostics;
 
 public class Blackboard : MonoBehaviour
 {
-    public List<GameObject> allBuildingPrefabs;
-
     public ResourceController resourceController;
-
-    private ProductionExpert productionExpert;
     public BuildingExpert buildingExpert;
+    public ProductionExpert productionExpert;
 
-    [Header("Decision Parameters")]
-    public float checkInterval = 10f;
+    public float checkInterval = 3f;
 
     private void Start()
     {
         if (resourceController == null) resourceController = FindObjectOfType<ResourceController>();
-
-        productionExpert = new ProductionExpert(resourceController, allBuildingPrefabs);
-
         if (buildingExpert == null) buildingExpert = FindObjectOfType<BuildingExpert>();
+        if (productionExpert == null) productionExpert = new ProductionExpert(resourceController, buildingExpert.GetAllPrefabs());
+
         buildingExpert.SetDependencies(resourceController);
 
-        InvokeRepeating(nameof(EvaluateAndAct), 2f, checkInterval);
+        InvokeRepeating(nameof(EvaluateAndAct), 1f, checkInterval);
     }
+
     private void EvaluateAndAct()
     {
+        Stopwatch sw = Stopwatch.StartNew();
         var urgent = productionExpert.GetMostUrgentResource();
+        sw.Stop();
 
-        if (urgent.HasValue)
-        {
-            buildingExpert.BuildFor(urgent.Value);
-        }
-        else
-        {
-            // Special signal: we're full on something, build warehouse
-            buildingExpert.BuildWarehouse();
-        }
+        SimulationLogger.Instance?.RegisterDecisionTime(sw.ElapsedMilliseconds);
+
+        if (urgent.HasValue) buildingExpert.BuildFor(urgent.Value);
+        else buildingExpert.BuildWarehouse();
     }
 }

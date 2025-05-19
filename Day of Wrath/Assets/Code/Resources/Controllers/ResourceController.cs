@@ -42,7 +42,7 @@ public class ResourceController : MonoBehaviour
         if (capacities.ContainsKey(type))
         {
             capacities[type] += amount;
-            Debug.Log($"{type} capacity increased by {amount}. New capacity: {capacities[type]}");
+            //Debug.Log($"{type} capacity increased by {amount}. New capacity: {capacities[type]}");
         }
     }
 
@@ -51,7 +51,7 @@ public class ResourceController : MonoBehaviour
         if (capacities.ContainsKey(type))
         {
             capacities[type] -= amount;
-            Debug.Log($"{type} capacity decreased by {amount}. New capacity: {capacities[type]}");
+            //Debug.Log($"{type} capacity decreased by {amount}. New capacity: {capacities[type]}");
 
             ClampResourceToCapacity(type);
         }
@@ -65,7 +65,7 @@ public class ResourceController : MonoBehaviour
             int actualAdded = newAmount - resources[type];
             resources[type] = newAmount;
 
-            Debug.Log($"{actualAdded} {type} added. New total: {resources[type]} / {capacities[type]}");
+            //Debug.Log($"{actualAdded} {type} added. New total: {resources[type]} / {capacities[type]}");
         }
     }
 
@@ -80,7 +80,7 @@ public class ResourceController : MonoBehaviour
         {
             resources[cost.resourceType] -= cost.amount;
 
-            Debug.Log($"{cost.amount} {cost.resourceType} spent. New total: {resources[cost.resourceType]}");
+            //Debug.Log($"{cost.amount} {cost.resourceType} spent. New total: {resources[cost.resourceType]}");
         }
 
         return true;
@@ -92,12 +92,12 @@ public class ResourceController : MonoBehaviour
         {
             if (!resources.ContainsKey(cost.resourceType) || resources[cost.resourceType] < cost.amount)
             {
-                Debug.LogWarning($"Not enough {cost.resourceType}. Required: {cost.amount}, Available: {resources[cost.resourceType]}");
+                //Debug.LogWarning($"Not enough {cost.resourceType}. Required: {cost.amount}, Available: {resources[cost.resourceType]}");
 
                 return false;
             }
 
-            Debug.LogWarning($"Enough {cost.resourceType}. Required: {cost.amount}, Available: {resources[cost.resourceType]}");
+            //Debug.LogWarning($"Enough {cost.resourceType}. Required: {cost.amount}, Available: {resources[cost.resourceType]}");
         }
 
         return true;
@@ -119,7 +119,7 @@ public class ResourceController : MonoBehaviour
         {
             resources[type] = Mathf.Min(resources[type], capacities[type]);
 
-            Debug.Log($"{type} clamped to {resources[type]} due to capacity limit: {capacities[type]}");
+            //Debug.Log($"{type} clamped to {resources[type]} due to capacity limit: {capacities[type]}");
         }
     }
 }
